@@ -1,4 +1,5 @@
-const { Pool } = require('pg')
+const { Pool } = require('pg');
+const suppliesAdd = require('./supplies-add');
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -22,12 +23,15 @@ const getProducts = (request, response) => {
 };
 
 
-const createProduct = (request, response) => {
-  const { name, userId, prof, price  } = request.body;
+const createProduct = async (request, response) => {
+  const { name, userId, prof, price, supplies } = request.body;
 
-  pool.query('INSERT INTO products (product_name, userid, prof, price, created_at, updated_at) VALUES ($1, $2, $3, $4, now(),now())', [name, userId,prof, price])
-  .then(res => {
-    response.status(200).json("OK");
+  pool.query('INSERT INTO products (product_name, userid, profit_percentage, price, created_at, updated_at) VALUES ($1, $2, $3, $4, now(),now()) RETURNING id', [name, userId,prof, price])
+  .then(async res => {
+    var newlyId = res.rows[0].id;
+    console.log("adding supplies with parent id: " + newlyId);
+    const result = await suppliesAdd.queryAddSupplies(pool, newlyId, supplies);
+    response.status(200).json({ status: (result ? 'OK' : 'NOK') });
   })
   .catch(e => {
     console.error(e.stack);
