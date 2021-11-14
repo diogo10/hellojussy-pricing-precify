@@ -1,7 +1,9 @@
 # hellojussy-pricing-precify
 
 A barebones Node.js app using [Express 4](http://expressjs.com/).
-CRUD for precify domain
+CRUD for precify domain.
+
+- Database: Postgres
 
 ## Running Locally
 
@@ -35,4 +37,5 @@ For more information about using Node.js on Heroku, see these Dev Center article
 - [Node.js on Heroku](https://devcenter.heroku.com/categories/nodejs)
 - [Best Practices for Node.js Development](https://devcenter.heroku.com/articles/node-best-practices)
 - [Using Postgres with Node.js](https://blog.logrocket.com/nodejs-expressjs-postgresql-crud-rest-api-example/) 
-- [Queries](https://node-postgres.com/features/queries) 
+- [Queries](https://node-postgres.com/features/queries)
+- [Postgres Heroku](https://devcenter.heroku.com/articles/heroku-postgresql#provisioning-heroku-postgres)  
