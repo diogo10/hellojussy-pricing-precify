@@ -4,6 +4,7 @@ A barebones Node.js app using [Express 4](http://expressjs.com/).
 CRUD for precify domain.
 
 - Database: Postgres
+- URL: https://guarded-hollows-17398.herokuapp.com/
 
 ## Running Locally
 
@@ -15,10 +16,6 @@ $ npm start
 ```
 
 Your app should now be running on [localhost:3000](http://localhost:3000/).
-
-*Remove* 
-
-https://guarded-hollows-17398.herokuapp.com/
 
 ## Deploying to Heroku
 
