@@ -7,9 +7,11 @@ const productDelete = require('./product-delete');
 const recipeAdd = require('./recipes-add');
 const recipeDelete = require('./recipes-delete');
 
-const connectionString = process.env.DATABASE_URL + "?ssl=true";
 const pool = new Pool({
-  connectionString
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 const getProducts = async (request, response) => {
