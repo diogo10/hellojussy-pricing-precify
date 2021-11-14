@@ -7,7 +7,7 @@ const productDelete = require('./product-delete');
 const recipeAdd = require('./recipes-add');
 const recipeDelete = require('./recipes-delete');
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL + "?ssl=true";
 const pool = new Pool({
   connectionString
 });
