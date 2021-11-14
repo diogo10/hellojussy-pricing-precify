@@ -14,8 +14,17 @@ const pool = new Pool({
   }
 });
 
+function extractToken (req) {
+  if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
+      return req.headers.authorization.split(' ')[1];
+  } else if (req.query && req.query.token) {
+      return req.query.token;
+  }
+  return null;
+}
+
 const getProducts = async (request, response) => {
-  const id = request.query.id;
+  const id = extractToken(request);
   const list = await productGet.queryGetProduct(pool, id);
   response.status(200).json(list);
 };

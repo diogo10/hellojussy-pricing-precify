@@ -20,7 +20,7 @@ CREATE TABLE products_recipes (
 	yieldvalue float8 NULL DEFAULT 0,
 	yieldvalueunit float8 NULL DEFAULT 0,
 	product_id int4 NOT NULL,
-	margemper float8 NULL,
+	margemper varchar(50) NULL,
 	recipe_id varchar(100) NULL,
 	CONSTRAINT products_recipes_pkey PRIMARY KEY (id)
 );
