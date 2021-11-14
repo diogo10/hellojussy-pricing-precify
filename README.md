@@ -1,6 +1,7 @@
-# hellojussy-pricing-percify
+# hellojussy-pricing-precify
 
 A barebones Node.js app using [Express 4](http://expressjs.com/).
+CRUD for precify domain
 
 ## Running Locally
 
