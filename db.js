@@ -5,6 +5,7 @@ const productAdd = require('./product-add');
 const productGet = require('./product-get');
 const productDelete = require('./product-delete');
 const recipeAdd = require('./recipes-add');
+const recipeDelete = require('./recipes-delete');
 
 const pool = new Pool({
   user: process.env.DB_USER,
@@ -29,10 +30,18 @@ const createProduct = async (request, response) => {
   const result2 = await recipeAdd.queryAddRecipes(pool, resultProductId, recipes);
 
   if (result && !result2) {
-  
-    var deleted = await suppliesDelete.queryDeleteSuppliesFromProduct(pool, resultProductId);
-    deleted = await productDelete.queryDeleteProduct(pool, resultProductId);
-    response.status(200).json('NOK');
+
+    const deletedTheSupplies = await suppliesDelete.queryDeleteSuppliesFromProduct(pool, resultProductId);
+    const deletedRecipes = await recipeDelete.queryDeleteRecipesFromProduct(pool, resultProductId);
+    const deletedProduct = await productDelete.queryDeleteProduct(pool, resultProductId);
+
+    response.status(200).json({
+      status: 'NOK', message: "internal error",
+      deletedSupplies: deletedTheSupplies,
+      deletedRecipes: deletedRecipes,
+      deletedProduct: deletedProduct
+    });
+    
   } else {
     response.status(200).json({ status: (result && result2 ? 'OK' : 'NOK') });
   }

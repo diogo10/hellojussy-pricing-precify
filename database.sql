@@ -9,20 +9,23 @@ CREATE TABLE products (
 	CONSTRAINT products_pkey PRIMARY KEY (id)
 );
 
-
 CREATE TABLE products_recipes (
-	id serial4 NOT null primary key,
+	id serial4 NOT NULL,
 	recipe_name varchar(100) NULL,
-	myPrice float8 NULL DEFAULT 0,
-	myProf float8 NULL DEFAULT 0,
-	profMargemPer float8 NULL,
+	myprice float8 NULL DEFAULT 0,
+	myprof float8 NULL DEFAULT 0,
+	profit float8 NULL,
 	total float8 NULL DEFAULT 0,
-	totalWithTax float8 NULL DEFAULT 0,
-	yieldValue float8 NULL DEFAULT 0,
-	yieldValueUnit float8 NULL DEFAULT 0,
-	product_id int4 not null ,
-	FOREIGN KEY (product_id) REFERENCES products (id)
+	totalwithtax float8 NULL DEFAULT 0,
+	yieldvalue float8 NULL DEFAULT 0,
+	yieldvalueunit float8 NULL DEFAULT 0,
+	product_id int4 NOT NULL,
+	margemper float8 NULL,
+	recipe_id varchar(100) NULL,
+	CONSTRAINT products_recipes_pkey PRIMARY KEY (id)
 );
+
+ALTER TABLE products_recipes ADD CONSTRAINT products_recipes_product_id_fkey FOREIGN KEY (product_id) REFERENCES public.products(id);
 
 CREATE TABLE products_recipes_products (
 	id serial4 NOT null primary key,

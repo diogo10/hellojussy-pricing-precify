@@ -1,6 +1,6 @@
-const text = 'DELETE FROM products_supplies WHERE product_id = $1 RETURNING id';
+const text = 'DELETE FROM products_recipes WHERE product_id = $1 RETURNING id';
 
-async function queryDeleteSuppliesFromProduct(pool, productId) {
+async function queryDeleteRecipesFromProduct(pool, productId) {
     return await executeQuery(pool, [productId]);
 }
 
@@ -15,5 +15,5 @@ async function executeQuery(pool, values) {
 }
 
 module.exports = {
-    queryDeleteSuppliesFromProduct
+    queryDeleteRecipesFromProduct
 }
