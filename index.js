@@ -27,5 +27,6 @@ app.get('/', (req, res) => {
 
 app.get('/api/products', db.getProducts);
 app.post('/api/products/create', db.createProduct);
+app.delete('/api/product/:id', db.deleteProduct);
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`))

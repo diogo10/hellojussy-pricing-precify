@@ -14,14 +14,25 @@ const pool = new Pool({
   }
 });
 
-function extractToken (req) {
+function extractToken(req) {
   if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
-      return req.headers.authorization.split(' ')[1];
+    return req.headers.authorization.split(' ')[1];
   } else if (req.query && req.query.token) {
-      return req.query.token;
+    return req.query.token;
   }
   return null;
 }
+
+const deleteProduct = async (request, response) => {
+  const { id } = request.params;
+  const deletedTheSupplies = await suppliesDelete.queryDeleteSuppliesFromProduct(pool, id);
+  const deletedRecipes = await recipeDelete.queryDeleteRecipesFromProduct(pool, id);
+  const deletedProduct = await productDelete.queryDeleteProduct(pool, id);
+
+  const myResult = deletedRecipes && deletedTheSupplies && deletedProduct;
+ 
+  response.send({status: (myResult ? 'OK' : 'NOK')});
+};
 
 const getProducts = async (request, response) => {
   const id = extractToken(request);
@@ -49,7 +60,7 @@ const createProduct = async (request, response) => {
       deletedRecipes: deletedRecipes,
       deletedProduct: deletedProduct
     });
-    
+
   } else {
     response.status(200).json({ status: (result && result2 ? 'OK' : 'NOK') });
   }
@@ -59,5 +70,5 @@ const createProduct = async (request, response) => {
 
 
 module.exports = {
-  getProducts, createProduct
+  getProducts, createProduct, deleteProduct
 }
