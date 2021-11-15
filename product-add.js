@@ -1,10 +1,17 @@
-const text = 'INSERT INTO products (product_name, userid, profit_percentage, price, created_at, updated_at) VALUES ($1, $2, $3, $4, now(),now()) RETURNING id';
-
+const text = 'INSERT INTO products' +
+'(product_name, userid, profit_percentage, price,' +
+'product_cost, product_cost_with_tax, product_cost_with_markup, product_cost_with_markup_tax, total_fichas, total_extras) ' +
+'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id';
 
 async function queryAddProduct(pool, body) {
 
-    const { name, userId, prof, price, supplies } = body;
-    const resultToReturn = await executeQuery(pool, [name, userId, prof, price]);
+    const { name, userId, prof, price, cost, costWithTax, totalFichas,
+        totalExtras, costWithMarkup, costWithMarkupTax } = body;
+
+    const values = [name, userId, prof, price, cost, costWithTax, 
+        costWithMarkup, costWithMarkupTax, totalFichas, totalExtras];
+
+    const resultToReturn = await executeQuery(pool, values);
 
     console.log("queryAddProduct: " + resultToReturn);
     return resultToReturn;

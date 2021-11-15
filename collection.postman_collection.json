@@ -1,0 +1,101 @@
+{
+	"info": {
+		"_postman_id": "29e4ac26-ce6c-4f49-b72c-a1562a10f466",
+		"name": "HelloJussy - Precify",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "aaa",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/products",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "aaa",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"\",\n    \"name\": \"tested real\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": \"10\",\n    \"price\": 5.0,\n    \"supplies\": [\n        {\n            \"id\": \"617aea052c2c410009794a4f\",\n            \"name\": \"Farinha\",\n            \"value\": \"500\",\n            \"status\": \"active\",\n            \"qt\": 10000,\n            \"qtValue\": 2.0,\n            \"unit\": \"KG\"\n        }\n    ],\n    \"recipes\": [\n        {\n            \"name\": \"Teste2\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": \"-4.18\",\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": \"3.94\",\n            \"totalWithTax\": \"4.18\",\n            \"yieldValue\": 4000.0,\n            \"yieldValueUnit\": 20.0,\n            \"products\": []\n        },\n        {\n            \"name\": \"bsidhd\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": \"-2.63\",\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": \"2.48\",\n            \"totalWithTax\": \"2.63\",\n            \"yieldValue\": 1000.0,\n            \"yieldValueUnit\": 100.0,\n            \"products\": []\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/products/create",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"products",
+						"create"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
