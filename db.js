@@ -3,6 +3,7 @@ const suppliesAdd = require('./supplies-add');
 const suppliesDelete = require('./supplies-delete');
 const productAdd = require('./product-add');
 const productGet = require('./product-get');
+const productEdit = require('./product-edit');
 const productDelete = require('./product-delete');
 const recipeAdd = require('./recipes-add');
 const recipeDelete = require('./recipes-delete');
@@ -22,6 +23,15 @@ function extractToken(req) {
   }
   return null;
 }
+
+const getProductEdit = async (request, response) => {
+  const id = extractToken(request);
+  const productId  = request.params.id;
+  var result = await productEdit.queryGetProductById(pool, id, productId);
+  console.log("getProductEdit; ");
+  console.log(result);
+  response.status(200).json(result);
+};
 
 const deleteProduct = async (request, response) => {
   const { id } = request.params;
@@ -70,5 +80,5 @@ const createProduct = async (request, response) => {
 
 
 module.exports = {
-  getProducts, createProduct, deleteProduct
+  getProducts, createProduct, deleteProduct, getProductEdit
 }

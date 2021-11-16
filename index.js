@@ -26,6 +26,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/products', db.getProducts);
+app.get('/api/product/:id', db.getProductEdit);
 app.post('/api/products/create', db.createProduct);
 app.delete('/api/product/:id', db.deleteProduct);
 
