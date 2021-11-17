@@ -31,6 +31,7 @@ CREATE TABLE products_supplies (
 	qtvalue float8 NULL,
 	unit varchar(20) NULL,
 	product_id int4 NULL DEFAULT 0,
+	supply_identity_id varchar(100) NOT NULL,
 	FOREIGN KEY (product_id) REFERENCES products (id)
 );
 
@@ -47,7 +48,7 @@ CREATE TABLE products_recipes (
 	yieldvalueunit float8 NULL DEFAULT 0,
 	product_id int4 NOT NULL,
 	margemper varchar(50) NULL,
-	recipe_id varchar(100) NULL,
+	recipe_identity_id varchar(100) NOT NULL,
 	CONSTRAINT products_recipes_pkey PRIMARY KEY (id)
 );
 
@@ -60,6 +61,7 @@ CREATE TABLE products_recipes_products (
 	qt integer not null DEFAULT 0,
 	qtValue float8 not NULL DEFAULT 0,
 	unit VARCHAR(20) not NULL,
-	products_recipes_id int4 not null ,
+	products_recipes_id int4 not null,
+	recipes_products_identity_id varchar(100) NOT NULL,
 	FOREIGN KEY (products_recipes_id) REFERENCES products_recipes (id)
 );

@@ -1,4 +1,5 @@
-const text1 = 'INSERT INTO products_recipes(recipe_name, myprice, myprof, profit,margemper,total, totalwithtax, yieldvalue, yieldvalueunit, product_id, recipe_id)'
+const text1 = 'INSERT INTO products_recipes(recipe_name, myprice, myprof, profit,margemper,total,' +
+'totalwithtax, yieldvalue, yieldvalueunit, product_id, recipe_identity_id)'
   + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id';
 
 const text2 = 'INSERT INTO products_recipes_products' +
