@@ -3,8 +3,8 @@ const text1 = 'INSERT INTO products_recipes(recipe_name, myprice, myprof, profit
   + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id';
 
 const text2 = 'INSERT INTO products_recipes_products' +
-  '(recipe_product_name, value, status, qt, qtvalue, unit, products_recipes_id)'
-  + ' VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+  '(recipe_product_name, value, status, qt, qtvalue, unit, products_recipes_id, recipes_products_identity_id)'
+  + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id';
 
 
 
@@ -24,7 +24,7 @@ async function queryAddRecipes(pool, parentId, list) {
       products.forEach(async item => {
 
         var valuesProduct = [item.name, item.value, item.status, item.qt,
-        item.qtValue, item.unit, recipeId];
+        item.qtValue, item.unit, recipeId, item.id];
 
         const productAdded = await executeRecipeProductsQuery(pool, valuesProduct);
         console.log("productAdded: " + productAdded);

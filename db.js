@@ -28,8 +28,6 @@ const getProductEdit = async (request, response) => {
   const id = extractToken(request);
   const productId  = request.params.id;
   var result = await productEdit.queryGetProductById(pool, id, productId);
-  console.log("getProductEdit; ");
-  console.log(result);
   response.status(200).json(result);
 };
 
