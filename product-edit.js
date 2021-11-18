@@ -1,11 +1,9 @@
 const text1 = 'SELECT * FROM products WHERE userid = $1 and id = $2';
 const text2 = 'SELECT id, supply_identity_id as _id, supply_name as name, value, qt, qtvalue, unit FROM products_supplies WHERE product_id = $1';
-const text3 = 'SELECT * FROM products_recipes WHERE product_id = $1';
+const text3 = 'SELECT id, recipe_identity_id as _id, quantity FROM products_recipes WHERE product_id = $1';
 
 const text4 = 'SELECT id, recipes_products_identity_id as _id, recipe_product_name as name, value, status,' +
 'qt, qtvalue,unit FROM products_recipes_products WHERE products_recipes_id = $1';
-
-//TODO: replace id to identity ids as strings
 
 async function queryGetProductById(pool, userId, productId) {
     var supplies = [];

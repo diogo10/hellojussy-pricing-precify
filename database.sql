@@ -49,6 +49,7 @@ CREATE TABLE products_recipes (
 	product_id int4 NOT NULL,
 	margemper varchar(50) NULL,
 	recipe_identity_id varchar(100) NOT NULL,
+	quantity float8 NULL DEFAULT 0,
 	CONSTRAINT products_recipes_pkey PRIMARY KEY (id)
 );
 
