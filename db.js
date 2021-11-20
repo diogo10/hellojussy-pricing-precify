@@ -1,10 +1,12 @@
 const { Pool } = require('pg');
 const suppliesAdd = require('./supplies-add');
 const suppliesDelete = require('./supplies-delete');
+const suppliesUpdate = require('./supplies-update');
 const productAdd = require('./product-add');
 const productGet = require('./product-get');
-const productEdit = require('./product-edit');
+const productGetEdit = require('./product-get-edit');
 const productDelete = require('./product-delete');
+const productUpdate = require('./product-update');
 const recipeAdd = require('./recipes-add');
 const recipeDelete = require('./recipes-delete');
 
@@ -24,10 +26,10 @@ function extractToken(req) {
   return null;
 }
 
-const getProductEdit = async (request, response) => {
+const getProductGetEdit = async (request, response) => {
   const id = extractToken(request);
   const productId  = request.params.id;
-  var result = await productEdit.queryGetProductById(pool, id, productId);
+  var result = await productGetEdit.queryGetProductById(pool, id, productId);
   response.status(200).json(result);
 };
 
@@ -76,7 +78,32 @@ const createProduct = async (request, response) => {
 };
 
 
+const updateProduct = async (request, response) => {
+  const { id } = request.params;
+  const body = request.body;
+  const { supplies, recipes } = request.body;
+  var result = await productUpdate.queryUpdateProducts(pool, body, id);
+
+  if(result === true) {
+    
+    var hasRemovedSupplies = await suppliesDelete.queryDeleteSuppliesFromProduct(pool, id);
+    console.log("hasRemovedSupplies: " + hasRemovedSupplies);
+    var result1 = await suppliesAdd.queryAddSupplies(pool, id, supplies);
+    console.log("has added supplies: " + result1);
+
+    var hasRemovedRecipes = await recipeDelete.queryDeleteRecipesFromProduct(pool, id);
+    console.log("hasRemovedRecipes: " + hasRemovedRecipes);
+    var result2 = await recipeAdd.queryAddRecipes(pool, id, recipes);
+    console.log("has added recipes: " + result2);
+
+    response.send({status: 'OK'});
+  } else {
+    response.send({status: 'NOK'});
+  }
+};
+
 
 module.exports = {
-  getProducts, createProduct, deleteProduct, getProductEdit
+  getProducts, createProduct, deleteProduct, getProductGetEdit,
+  updateProduct
 }

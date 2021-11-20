@@ -18,7 +18,6 @@ async function queryAddSupplies(pool, parentId, list) {
     return e;
   });
 
-  console.log("queryAddSupplies: " + resultToReturn);
   return resultToReturn;
 }
 
