@@ -33,6 +33,6 @@ app.delete('/api/product/:id', db.deleteProduct);
 
 // Recalculate related endpoints
 
-app.post('/api/product/recalculate/recipe', db.recalculateRecipe);
+app.post('/api/product/update/recipe', db.recalculateRecipe);
 
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`))

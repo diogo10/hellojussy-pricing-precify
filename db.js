@@ -106,7 +106,16 @@ const updateProduct = async (request, response) => {
   }
 };
 
-const recalculateRecipe = async (request, response) => {
+/**
+ * This method will update a recipe. 
+ * First, it will get all recipes by the remote id and then: 
+ *  - Remove old data
+ *  - Save old data such as product_id and quantity
+ *  - Add the new recipe along with old row data
+ * @param {*} request - recipe body
+ * @param {*} response OK or NOK
+ */
+const updateRecipe = async (request, response) => {
   const body = request.body;
   const userId = extractToken(request);
   const id = body.id;
@@ -119,5 +128,5 @@ const recalculateRecipe = async (request, response) => {
 
 module.exports = {
   getProducts, createProduct, deleteProduct, getProductGetEdit,
-  updateProduct, recalculateRecipe
+  updateProduct, updateRecipe
 }
