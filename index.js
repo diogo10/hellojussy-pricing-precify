@@ -31,4 +31,8 @@ app.post('/api/products/create', db.createProduct);
 app.put('/api/products/save/:id', db.updateProduct);
 app.delete('/api/product/:id', db.deleteProduct);
 
+// Recalculate related endpoints
+
+app.post('/api/product/recalculate/recipe', db.recalculateRecipe);
+
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`))

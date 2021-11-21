@@ -8,7 +8,11 @@ const productGetEdit = require('./product-get-edit');
 const productDelete = require('./product-delete');
 const productUpdate = require('./product-update');
 const recipeAdd = require('./recipes-add');
+const recipeUpdate = require('./recipe-update');
 const recipeDelete = require('./recipes-delete');
+const recipeGet = require('./recipes-get');
+
+const recipeRecal = require('./recal-recipes');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -28,7 +32,7 @@ function extractToken(req) {
 
 const getProductGetEdit = async (request, response) => {
   const id = extractToken(request);
-  const productId  = request.params.id;
+  const productId = request.params.id;
   var result = await productGetEdit.queryGetProductById(pool, id, productId);
   response.status(200).json(result);
 };
@@ -40,8 +44,8 @@ const deleteProduct = async (request, response) => {
   const deletedProduct = await productDelete.queryDeleteProduct(pool, id);
 
   const myResult = deletedRecipes && deletedTheSupplies && deletedProduct;
- 
-  response.send({status: (myResult ? 'OK' : 'NOK')});
+
+  response.send({ status: (myResult ? 'OK' : 'NOK') });
 };
 
 const getProducts = async (request, response) => {
@@ -84,8 +88,8 @@ const updateProduct = async (request, response) => {
   const { supplies, recipes } = request.body;
   var result = await productUpdate.queryUpdateProducts(pool, body, id);
 
-  if(result === true) {
-    
+  if (result === true) {
+
     var hasRemovedSupplies = await suppliesDelete.queryDeleteSuppliesFromProduct(pool, id);
     console.log("hasRemovedSupplies: " + hasRemovedSupplies);
     var result1 = await suppliesAdd.queryAddSupplies(pool, id, supplies);
@@ -96,14 +100,24 @@ const updateProduct = async (request, response) => {
     var result2 = await recipeAdd.queryAddRecipes(pool, id, recipes);
     console.log("has added recipes: " + result2);
 
-    response.send({status: 'OK'});
+    response.send({ status: 'OK' });
   } else {
-    response.send({status: 'NOK'});
+    response.send({ status: 'NOK' });
   }
 };
 
+const recalculateRecipe = async (request, response) => {
+  const body = request.body;
+  const userId = extractToken(request);
+  const id = body.id;
+
+  var list = await recipeGet.queryGetRecipes(pool, id, userId);
+  var result = await recipeRecal.recalRecipe(pool, body, userId, list)
+
+  response.status(200).json({ status: (result ? 'OK' : 'NOK') });
+};
 
 module.exports = {
   getProducts, createProduct, deleteProduct, getProductGetEdit,
-  updateProduct
+  updateProduct, recalculateRecipe
 }

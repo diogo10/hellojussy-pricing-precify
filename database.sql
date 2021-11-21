@@ -50,7 +50,8 @@ CREATE TABLE products_recipes (
 	margemper varchar(50) NULL,
 	recipe_identity_id varchar(100) NOT NULL,
 	quantity float8 NULL DEFAULT 0,
-	CONSTRAINT products_recipes_pkey PRIMARY KEY (id)
+	CONSTRAINT products_recipes_pkey PRIMARY KEY (id),
+	FOREIGN KEY (product_id) REFERENCES products (id)
 );
 
 
@@ -64,5 +65,5 @@ CREATE TABLE products_recipes_products (
 	unit VARCHAR(20) not NULL,
 	products_recipes_id int4 not null,
 	recipes_products_identity_id varchar(100) NOT NULL,
-	FOREIGN KEY (products_recipes_id) REFERENCES products_recipes (id)
+	FOREIGN KEY (products_recipes_id) REFERENCES products_recipes (id) ON DELETE CASCADE
 );
