@@ -75,14 +75,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/api/product/3",
+					"raw": "{{url}}/api/product/2",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"product",
-						"3"
+						"2"
 					]
 				}
 			},
@@ -118,7 +118,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"\",\n    \"name\": \"tested real\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": \"10\",\n    \"price\": 5.0,\n    \"cost\": 3,\n    \"costWithTax\": 6,\n    \"totalFichas\": 5,\n    \"totalExtras\": 2,\n    \"costWithMarkup\": 8,\n    \"costWithMarkupTax\": 10,\n    \"supplies\": [\n        {\n            \"id\": \"617aea052c2c410009794a4f\",\n            \"name\": \"Farinha\",\n            \"value\": \"500\",\n            \"status\": \"active\",\n            \"qt\": 10000,\n            \"qtValue\": 2.0,\n            \"unit\": \"KG\"\n        }\n    ],\n    \"recipes\": [\n        {\n            \"name\": \"Teste2\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": \"-4.18\",\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": \"3.94\",\n            \"totalWithTax\": \"4.18\",\n            \"yieldValue\": 4000.0,\n            \"yieldValueUnit\": 20.0,\n            \"products\": []\n        },\n        {\n            \"name\": \"bsidhd\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": \"-2.63\",\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": \"2.48\",\n            \"totalWithTax\": \"2.63\",\n            \"yieldValue\": 1000.0,\n            \"yieldValueUnit\": 100.0,\n            \"products\": []\n        }\n    ]\n}",
+					"raw": "{\n    \"id\": \"\",\n    \"name\": \"tested real\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": \"10\",\n    \"price\": 5.0,\n    \"cost\": 3,\n    \"costWithTax\": 6,\n    \"totalFichas\": 5,\n    \"totalExtras\": 2,\n    \"costWithMarkup\": 8,\n    \"costWithMarkupTax\": 10,\n    \"supplies\": [\n        {\n            \"id\": \"617aea052c2c410009794a4f\",\n            \"name\": \"Farinha\",\n            \"value\": \"500\",\n            \"status\": \"active\",\n            \"qt\": 10000,\n            \"qtValue\": 2.0,\n            \"unit\": \"KG\"\n        }\n    ],\n    \"recipes\": [\n        {\n            \"name\": \"Teste2\",\n            \"id\": \"1265656565\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": \"-4.18\",\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": \"3.94\",\n            \"totalWithTax\": \"4.18\",\n            \"yieldValue\": 4000.0,\n            \"yieldValueUnit\": 20.0,\n            \"quantity\": 1000,\n            \"products\": [\n                {\n                    \"id\": \"617aea052c2c410009794a4f\",\n                    \"name\": \"Farinha\",\n                    \"value\": \"1.8\",\n                    \"status\": \"active\",\n                    \"qt\": 10000,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"KG\"\n                },\n                {\n                    \"id\": \"617b0b3c39124500083ed407\",\n                    \"name\": \"Açúcar Refinado\",\n                    \"value\": \"400\",\n                    \"status\": \"active\",\n                    \"qt\": 1000,\n                    \"qtValue\": 6.0,\n                    \"unit\": \"KG\"\n                }\n            ]\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -134,6 +134,58 @@
 						"api",
 						"products",
 						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit Product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "3DtXXvgec9SBYtgT3whh1fsfaTC3",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": 1,\n    \"name\": \"Test editing 1\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": 10,\n    \"price\": 10.0,\n    \"cost\": 8.9575000000000005,\n    \"costWithTax\": 7.327725000000001,\n    \"totalFichas\": 1.4775,\n    \"totalExtras\": 4.48,\n    \"costWithMarkup\": 8.280925,\n    \"costWithMarkupTax\": 10.18553775,\n    \"supplies\": [\n        {\n            \"id\": \"61938d62cfc4d10008128487\",\n            \"name\": \"farinha integral\",\n            \"value\": 2,\n            \"status\": null,\n            \"qt\": 5,\n            \"qtValue\": 3.69,\n            \"unit\": \"KG\"\n        },\n        {\n            \"id\": \"617b0b3c39124500083ed407\",\n            \"name\": \"Açúcar Refinado\",\n            \"value\": 500,\n            \"status\": null,\n            \"qt\": 1000,\n            \"qtValue\": 6.0,\n            \"unit\": \"KG\"\n        }\n    ],\n    \"recipes\": [\n        {\n            \"id\": \"617fb5d60f85e300092aeff5\",\n            \"name\": \"Teste2\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": -4.85,\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": 3.94,\n            \"totalWithTax\": 4.85,\n            \"yieldValue\": 4000.0,\n            \"yieldValueUnit\": 20.0,\n            \"quantity\": 1500.0,\n            \"products\": [\n                {\n                    \"id\": \"617aea052c2c410009794a4f\",\n                    \"name\": \"Farinha\",\n                    \"value\": 400,\n                    \"status\": \"active\",\n                    \"qt\": 10000,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"KG\"\n                },\n                {\n                    \"id\": \"617b0b3c39124500083ed407\",\n                    \"name\": \"Açúcar Refinado\",\n                    \"value\": 400,\n                    \"status\": \"active\",\n                    \"qt\": 1000,\n                    \"qtValue\": 6.0,\n                    \"unit\": \"KG\"\n                }\n            ]\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/products/save/1",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"products",
+						"save",
+						"1"
 					]
 				}
 			},

@@ -1,4 +1,4 @@
-const text = 'SELECT * FROM products WHERE userid = $1';
+const text = 'SELECT * FROM products WHERE userid = $1 ORDER BY id DESC';
 
 async function queryGetProduct(pool, userId) {
     const list = await executeQuery(pool, [userId]);
