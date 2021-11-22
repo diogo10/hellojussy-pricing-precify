@@ -16,9 +16,6 @@ const recipeRecal = require('./recal-recipes');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
 });
 
 function extractToken(req) {
@@ -140,7 +137,16 @@ const updateSupply = async (request, response) => {
   response.status(200).json({ status: (hasUpdated ? 'OK' : 'NOK') });
 };
 
+const deleteSupply = async (request, response) => {
+  const supplyId = request.body.id;
+  const userId = extractToken(request);
+  var hasDeleted = await suppliesDelete.queryDeleteSupplyByRemoteId(pool, supplyId, userId);
+  console.log("deleteSupply: " + hasDeleted);
+
+  response.status(200).json({ status: (hasDeleted ? 'OK' : 'NOK') });
+};
+
 module.exports = {
   getProducts, createProduct, deleteProduct, getProductGetEdit,
-  updateProduct, updateRecipe, updateSupply
+  updateProduct, updateRecipe, updateSupply, deleteSupply
 }
