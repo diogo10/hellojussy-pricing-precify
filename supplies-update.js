@@ -1,30 +1,18 @@
 const utils = require('./db-util');
 
-const sqlUpdateSupplies = 'UPDATE products_supplies SET ' +
+const sql = 'UPDATE products_supplies SET ' +
     'supply_name=$1, value=$2, qt=$3, qtvalue=$4, unit=$5 ' +
-    'where product_id=$6 AND supply_identity_id=$7 RETURNING *;';
+    'where supply_identity_id=$6' +
+    'AND product_id in (select id from products where userid = $7';
 
+async function updateSupplies(pool, supply, userId) {
+    var values = [supply.name, supply.value, supply.qt,
+        supply.qtValue, supply.unit, userId.id, userId];
 
-async function updateSupplies(pool, supplies, productId) {
-    const pArray = supplies.map(async element => {
+    var hasUpdated = await utils.executeUpdateQuery(pool, sql, values);
 
-        var values = [element.name, element.value, element.qt,
-        element.qtValue, element.unit,
-            productId, element.id];
-
-        var hasUpdated = await utils.executeUpdateQuery(pool, sqlUpdateSupplies, values);
-        return hasUpdated;
-    });
-
-    const results = await Promise.all(pArray);
-
-    let resultToReturn = results.every(function (e) {
-        return e;
-    });
-
-    return resultToReturn;
+    return hasUpdated;
 }
-
 
 module.exports = {
     updateSupplies

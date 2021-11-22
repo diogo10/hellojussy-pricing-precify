@@ -106,6 +106,8 @@ const updateProduct = async (request, response) => {
   }
 };
 
+// Webhooks - Recipe
+
 /**
  * This method will update a recipe. 
  * First, it will get all recipes by the remote id and then: 
@@ -126,7 +128,19 @@ const updateRecipe = async (request, response) => {
   response.status(200).json({ status: (result ? 'OK' : 'NOK') });
 };
 
+// Webhooks - Supply
+
+const updateSupply = async (request, response) => {
+  const supply = request.body;
+  const userId = extractToken(request);
+
+  var hasUpdated = await suppliesUpdate.updateSupplies(pool, supply, userId);
+  console.log("updateSupply: " + hasUpdated);
+
+  response.status(200).json({ status: (hasUpdated ? 'OK' : 'NOK') });
+};
+
 module.exports = {
   getProducts, createProduct, deleteProduct, getProductGetEdit,
-  updateProduct, updateRecipe
+  updateProduct, updateRecipe, updateSupply
 }
