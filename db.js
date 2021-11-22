@@ -1,17 +1,18 @@
 const { Pool } = require('pg');
+
 const suppliesAdd = require('./supplies-add');
 const suppliesDelete = require('./supplies-delete');
 const suppliesUpdate = require('./supplies-update');
+
 const productAdd = require('./product-add');
 const productGet = require('./product-get');
 const productGetEdit = require('./product-get-edit');
 const productDelete = require('./product-delete');
 const productUpdate = require('./product-update');
+
 const recipeAdd = require('./recipes-add');
-const recipeUpdate = require('./recipe-update');
 const recipeDelete = require('./recipes-delete');
 const recipeGet = require('./recipes-get');
-
 const recipeRecal = require('./recal-recipes');
 
 const pool = new Pool({
@@ -112,7 +113,7 @@ const updateProduct = async (request, response) => {
  *  - Save old data such as product_id and quantity
  *  - Add the new recipe along with old row data
  * @param {*} request - recipe body
- * @param {*} response OK or NOK
+ * @param {*} response OK or NOK(it does not mean bad in this situation)
  */
 const updateRecipe = async (request, response) => {
   const body = request.body;
@@ -125,8 +126,27 @@ const updateRecipe = async (request, response) => {
   response.status(200).json({ status: (result ? 'OK' : 'NOK') });
 };
 
+/**
+ * Should delete a recipe by his remote id.
+ * @param {*} request - id
+ * @param {*} response - OK or NOK(it does not mean bad in this situation)
+ */
+const deleteRecipe = async (request, response) => {
+  const recipeId = request.body.id;
+  const userId = extractToken(request);
+  var hasDeleted = await recipeDelete.queryDeleteRecipeWith(pool, recipeId, userId);
+  console.log("deleteRecipe: " + hasDeleted);
+
+  response.status(200).json({ status: (hasDeleted ? 'OK' : 'NOK') });
+};
+
 // Webhooks - Supply
 
+/**
+ * Should update a supply using the remote id.
+ * @param {*} request - id
+ * @param {*} response - OK or NOK(it does not mean bad in this situation)
+ */
 const updateSupply = async (request, response) => {
   const supply = request.body;
   const userId = extractToken(request);
@@ -137,6 +157,11 @@ const updateSupply = async (request, response) => {
   response.status(200).json({ status: (hasUpdated ? 'OK' : 'NOK') });
 };
 
+/**
+ * Should delete a supply by his remote id.
+ * @param {*} request - id
+ * @param {*} response - OK or NOK(it does not mean bad in this situation)
+ */
 const deleteSupply = async (request, response) => {
   const supplyId = request.body.id;
   const userId = extractToken(request);
@@ -148,5 +173,5 @@ const deleteSupply = async (request, response) => {
 
 module.exports = {
   getProducts, createProduct, deleteProduct, getProductGetEdit,
-  updateProduct, updateRecipe, updateSupply, deleteSupply
+  updateProduct, updateRecipe, deleteRecipe, updateSupply, deleteSupply
 }

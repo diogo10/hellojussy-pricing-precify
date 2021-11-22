@@ -32,9 +32,11 @@ app.put('/api/products/save/:id', db.updateProduct);
 app.delete('/api/product/:id', db.deleteProduct);
 
 // Recalculate related endpoints
+// These endpoints are going to trigger the recalculation
 
 app.post('/api/product/update/recipe', db.updateRecipe);
-//TODO delete recipe
+app.post('/api/product/delete/recipe', db.deleteRecipe);
+
 app.post('/api/product/update/supply', db.updateSupply);
 app.post('/api/product/delete/supply', db.deleteSupply);
 
