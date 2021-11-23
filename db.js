@@ -126,7 +126,11 @@ const updateRecipe = async (request, response) => {
   const id = body.id;
 
   var list = await recipeGet.queryGetRecipes(pool, id, userId);
-  var result = await recipeRecal.recalRecipe(pool, body, userId, list)
+  var result = await recipeRecal.recalRecipe(pool, body, userId, list);
+
+  if(result) {
+    recal.executeRecalculate(pool, userId);
+  }
 
   response.status(200).json({ status: (result ? 'OK' : 'NOK') });
 };
@@ -141,6 +145,10 @@ const deleteRecipe = async (request, response) => {
   const userId = extractToken(request);
   var hasDeleted = await recipeDelete.queryDeleteRecipeWith(pool, recipeId, userId);
   console.log("deleteRecipe: " + hasDeleted);
+
+  if(hasDeleted) {
+    recal.executeRecalculate(pool, userId);
+  }
 
   response.status(200).json({ status: (hasDeleted ? 'OK' : 'NOK') });
 };
@@ -159,6 +167,10 @@ const updateSupply = async (request, response) => {
   var hasUpdated = await suppliesUpdate.updateSupplies(pool, supply, userId);
   console.log("updateSupply: " + hasUpdated);
 
+  if(hasUpdated) {
+    recal.executeRecalculate(pool, userId);
+  }
+
   response.status(200).json({ status: (hasUpdated ? 'OK' : 'NOK') });
 };
 
@@ -172,6 +184,10 @@ const deleteSupply = async (request, response) => {
   const userId = extractToken(request);
   var hasDeleted = await suppliesDelete.queryDeleteSupplyByRemoteId(pool, supplyId, userId);
   console.log("deleteSupply: " + hasDeleted);
+
+  if(hasDeleted) {
+    recal.executeRecalculate(pool, userId);
+  }
 
   response.status(200).json({ status: (hasDeleted ? 'OK' : 'NOK') });
 };

@@ -1,4 +1,5 @@
 const utils = require('./db-util');
+const recal = require('./recal');
 
 const sql = 'UPDATE products_supplies SET ' +
     'supply_name=$1, qt=$2, qtvalue=$3, unit=$4 ' +
@@ -10,7 +11,6 @@ async function updateSupplies(pool, supply, userId) {
         supply.qtValue, supply.unit, supply.id, userId];
 
     var hasUpdated = await utils.executeUpdateQuery(pool, sql, values);
-
     return hasUpdated;
 }
 
