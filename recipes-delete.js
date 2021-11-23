@@ -1,4 +1,5 @@
 const utils = require('./db-util');
+const recal = require('./recal');
 
 const text1 = 'DELETE FROM products_recipes WHERE product_id = $1 RETURNING id';
 
@@ -17,8 +18,12 @@ async function queryDeleteRecipesFromProduct(pool, productId) {
 
 async function queryDeleteRecipeWith(pool, recipeId, userId) {
 
-    var result =  await utils.executeDeleteQuery(pool, 
+    var result = await utils.executeDeleteQuery(pool, 
         text2 ,[recipeId, userId]);
+
+     if (result) {
+        recal.executeRecalculate(userId);
+     }
 
     return result
 }
@@ -30,5 +35,6 @@ async function queryDeleteRecipeById(pool, id, userId) {
 }
 
 module.exports = {
-    queryDeleteRecipesFromProduct, queryDeleteRecipeWith, queryDeleteRecipeById
+    queryDeleteRecipesFromProduct, queryDeleteRecipeWith, 
+    queryDeleteRecipeById
 }

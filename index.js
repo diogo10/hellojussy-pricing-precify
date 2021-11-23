@@ -31,6 +31,8 @@ app.post('/api/products/create', db.createProduct);
 app.put('/api/products/save/:id', db.updateProduct);
 app.delete('/api/product/:id', db.deleteProduct);
 
+app.post('/api/products/recalculate', db.recalculate);
+
 // Recalculate related endpoints
 // These endpoints are going to trigger the recalculation
 

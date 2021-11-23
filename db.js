@@ -15,8 +15,13 @@ const recipeDelete = require('./recipes-delete');
 const recipeGet = require('./recipes-get');
 const recipeRecal = require('./recal-recipes');
 
+const recal = require('./recal');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 function extractToken(req) {
@@ -171,7 +176,14 @@ const deleteSupply = async (request, response) => {
   response.status(200).json({ status: (hasDeleted ? 'OK' : 'NOK') });
 };
 
+const recalculate = async (request, response) => {
+  const userId = extractToken(request);
+  var result = await recal.executeRecalculate(pool, userId);
+  response.status(200).json({ status: (result ? 'OK' : 'NOK') });
+};
+
 module.exports = {
   getProducts, createProduct, deleteProduct, getProductGetEdit,
-  updateProduct, updateRecipe, deleteRecipe, updateSupply, deleteSupply
+  updateProduct, updateRecipe, deleteRecipe, updateSupply, deleteSupply,
+  recalculate
 }
