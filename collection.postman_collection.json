@@ -75,14 +75,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/api/product/2",
+					"raw": "{{url}}/api/product/1",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"product",
-						"2"
+						"1"
 					]
 				}
 			},
@@ -118,7 +118,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"\",\n    \"name\": \"tested real\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": \"10\",\n    \"price\": 5.0,\n    \"cost\": 3,\n    \"costWithTax\": 6,\n    \"totalFichas\": 5,\n    \"totalExtras\": 2,\n    \"costWithMarkup\": 8,\n    \"costWithMarkupTax\": 10,\n    \"supplies\": [\n        {\n            \"id\": \"617aea052c2c410009794a4f\",\n            \"name\": \"Farinha\",\n            \"value\": \"500\",\n            \"status\": \"active\",\n            \"qt\": 10000,\n            \"qtValue\": 2.0,\n            \"unit\": \"KG\"\n        }\n    ],\n    \"recipes\": [\n        {\n            \"name\": \"Teste2\",\n            \"id\": \"1265656565\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": \"-4.18\",\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": \"3.94\",\n            \"totalWithTax\": \"4.18\",\n            \"yieldValue\": 4000.0,\n            \"yieldValueUnit\": 20.0,\n            \"quantity\": 1000,\n            \"products\": [\n                {\n                    \"id\": \"617aea052c2c410009794a4f\",\n                    \"name\": \"Farinha\",\n                    \"value\": \"1.8\",\n                    \"status\": \"active\",\n                    \"qt\": 10000,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"KG\"\n                },\n                {\n                    \"id\": \"617b0b3c39124500083ed407\",\n                    \"name\": \"Açúcar Refinado\",\n                    \"value\": \"400\",\n                    \"status\": \"active\",\n                    \"qt\": 1000,\n                    \"qtValue\": 6.0,\n                    \"unit\": \"KG\"\n                }\n            ]\n        }\n    ]\n}",
+					"raw": "{\n    \"id\": \"\",\n    \"name\": \"tested real 232323\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": \"10\",\n    \"price\": 5.0,\n    \"cost\": 3,\n    \"costWithTax\": 6,\n    \"totalFichas\": 5,\n    \"totalExtras\": 2,\n    \"costWithMarkup\": 8,\n    \"costWithMarkupTax\": 10,\n    \"supplies\": [\n        {\n            \"id\": \"617aea052c2c410009794a4f\",\n            \"name\": \"Farinha\",\n            \"value\": \"500\",\n            \"status\": \"active\",\n            \"qt\": 10000,\n            \"qtValue\": 2.0,\n            \"unit\": \"KG\"\n        }\n    ],\n    \"recipes\": [\n        {\n            \"name\": \"Teste2\",\n            \"id\": \"1265656565\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": \"-4.18\",\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": \"3.94\",\n            \"totalWithTax\": \"4.18\",\n            \"yieldValue\": 4000.0,\n            \"yieldValueUnit\": 20.0,\n            \"quantity\": 1000,\n            \"products\": [\n                {\n                    \"id\": \"617aea052c2c410009794a4f\",\n                    \"name\": \"Farinha\",\n                    \"value\": \"1.8\",\n                    \"status\": \"active\",\n                    \"qt\": 10000,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"KG\"\n                },\n                {\n                    \"id\": \"617b0b3c39124500083ed407\",\n                    \"name\": \"Açúcar Refinado\",\n                    \"value\": \"400\",\n                    \"status\": \"active\",\n                    \"qt\": 1000,\n                    \"qtValue\": 6.0,\n                    \"unit\": \"KG\"\n                }\n            ]\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -215,6 +215,113 @@
 						"api",
 						"product",
 						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recalculate - Update Recipe",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "3DtXXvgec9SBYtgT3whh1fsfaTC3",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"619a2eb27bfa5e0009c2979d\",\n    \"name\": \"bsidhd6\",\n    \"myPrice\": 0.0,\n    \"myProf\": 0.0,\n    \"profit\": -1.65,\n    \"profMargemPer\": \"-100.00%\",\n    \"total\": 1.34,\n    \"totalWithTax\": 1.65,\n    \"yieldValue\": 8000.0,\n    \"yieldValueUnit\": 100.0,\n    \"products\": [\n        {\n            \"id\": \"617b0bc539124500083ed40c\",\n            \"name\": \"café solúvel\",\n            \"value\": 100,\n            \"status\": \"active\",\n            \"qt\": 200,\n            \"qtValue\": 2.69,\n            \"unit\": \"KG\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/product/update/recipe",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"product",
+						"update",
+						"recipe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recalculate - Remove Supply",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "3DtXXvgec9SBYtgT3whh1fsfaTC3",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"617b0bf239124500083ed40d\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/product/delete/supply",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"product",
+						"delete",
+						"supply"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recalculate",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "3DtXXvgec9SBYtgT3whh1fsfaTC3",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/api/products/recalculate",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"products",
+						"recalculate"
 					]
 				}
 			},
