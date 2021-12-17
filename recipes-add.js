@@ -1,6 +1,6 @@
-const text1 = 'INSERT INTO products_recipes(recipe_name, myprice, myprof, profit,margemper,total,' +
+const text1 = 'INSERT INTO products_recipes(recipe_name, total,' +
 'totalwithtax, yieldvalue, yieldvalueunit, product_id, recipe_identity_id, quantity)'
-  + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id';
+  + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id';
 
 const text2 = 'INSERT INTO products_recipes_products' +
   '(recipe_product_name, value, status, qt, qtvalue, unit, products_recipes_id, recipes_products_identity_id)'
@@ -8,11 +8,11 @@ const text2 = 'INSERT INTO products_recipes_products' +
 
 
 async function queryAddRecipes(pool, parentId, list) {
+  console.log("queryAddRecipes: " + parentId);
 
   const pArray = list.map(async element => {
 
-    var valuesRecipes = [element.name, element.myPrice, element.myProf,
-    element.profit, element.profMargemPer,
+    var valuesRecipes = [element.name,
     element.total, element.totalWithTax, element.yieldValue,
     element.yieldValueUnit, parentId, element.id, element.quantity];
 
