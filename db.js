@@ -46,7 +46,11 @@ const deleteProduct = async (request, response) => {
   const deletedRecipes = await recipeDelete.queryDeleteRecipesFromProduct(pool, id);
   const deletedProduct = await productDelete.queryDeleteProduct(pool, id);
 
-  const myResult = deletedRecipes && deletedTheSupplies && deletedProduct;
+  console.log("delete supplies: " + deletedTheSupplies);
+  console.log("delete recipes: " + deletedRecipes);
+  console.log("delete product: " + deletedProduct);
+
+  const myResult = deletedProduct;
 
   response.send({ status: (myResult ? 'OK' : 'NOK') });
 };
