@@ -118,7 +118,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"\",\n    \"name\": \"tested real 232323\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": \"10\",\n    \"price\": 5.0,\n    \"cost\": 3,\n    \"costWithTax\": 6,\n    \"totalFichas\": 5,\n    \"totalExtras\": 2,\n    \"costWithMarkup\": 8,\n    \"costWithMarkupTax\": 10,\n    \"supplies\": [\n        {\n            \"id\": \"617aea052c2c410009794a4f\",\n            \"name\": \"Farinha\",\n            \"value\": \"500\",\n            \"status\": \"active\",\n            \"qt\": 10000,\n            \"qtValue\": 2.0,\n            \"unit\": \"KG\"\n        }\n    ],\n    \"recipes\": [\n        {\n            \"name\": \"Teste2\",\n            \"id\": \"1265656565\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": \"-4.18\",\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": \"3.94\",\n            \"totalWithTax\": \"4.18\",\n            \"yieldValue\": 4000.0,\n            \"yieldValueUnit\": 20.0,\n            \"quantity\": 1000,\n            \"products\": [\n                {\n                    \"id\": \"617aea052c2c410009794a4f\",\n                    \"name\": \"Farinha\",\n                    \"value\": \"1.8\",\n                    \"status\": \"active\",\n                    \"qt\": 10000,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"KG\"\n                },\n                {\n                    \"id\": \"617b0b3c39124500083ed407\",\n                    \"name\": \"Açúcar Refinado\",\n                    \"value\": \"400\",\n                    \"status\": \"active\",\n                    \"qt\": 1000,\n                    \"qtValue\": 6.0,\n                    \"unit\": \"KG\"\n                }\n            ]\n        }\n    ]\n}",
+					"raw": "{\n    \"id\": 0,\n    \"name\": \"hhhg\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": 60,\n    \"price\": 9.0,\n    \"cost\": 1.87,\n    \"costWithTax\": 2.3001,\n    \"totalFichas\": 1.87,\n    \"totalExtras\": 0.0,\n    \"costWithMarkup\": 2.6137488666666666,\n    \"costWithMarkupTax\": 3.2149111059999997,\n    \"supplies\": [],\n    \"recipes\": [\n        {\n            \"id\": \"61b49f58dc7bf733df1906b4\",\n            \"name\": \"Brigadeiro\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": -2.30,\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": 1.87,\n            \"totalWithTax\": 2.30,\n            \"yieldValue\": 460.0,\n            \"yieldValueUnit\": 23.0,\n            \"weightValueUnit\": 20.0,\n            \"quantity\": 460.0,\n            \"products\": [\n                {\n                    \"id\": \"61b485ca1940d0000903e6da\",\n                    \"name\": \"Forminha\",\n                    \"value\": 23,\n                    \"status\": \"active\",\n                    \"qt\": 100.0,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"UN\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"61b485b11940d0000903e6d9\",\n                    \"name\": \"Granulado\",\n                    \"value\": 70,\n                    \"status\": \"active\",\n                    \"qt\": 1000.0,\n                    \"qtValue\": 4.75,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"617af026734d470009fe55e3\",\n                    \"name\": \"Glucose\",\n                    \"value\": 15,\n                    \"status\": \"active\",\n                    \"qt\": 1000.0,\n                    \"qtValue\": 6.0,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"615461e076739000097a0d83\",\n                    \"name\": \"leite condensado\",\n                    \"value\": 397,\n                    \"status\": \"active\",\n                    \"qt\": 397.0,\n                    \"qtValue\": 0.99,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                }\n            ]\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -322,6 +322,44 @@
 						"api",
 						"products",
 						"recalculate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete All",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "3DtXXvgec9SBYtgT3whh1fsfaTC3",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/product/delete",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"product",
+						"delete"
 					]
 				}
 			},

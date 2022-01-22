@@ -13,13 +13,8 @@ begin
         	   delete from products_recipes where product_id = TABLE_RECORD.id;
            
    		 END LOOP;
-   
+     delete from products where userid = userIdentify;        
     return;
-	
-   
-   delete from products where userid = userIdentify;
-   
-   
 end; $$
 
 --CALL public.procedure_delete_all('3DtXXvgec9SBYtgT3whh1fsfaTC3');
