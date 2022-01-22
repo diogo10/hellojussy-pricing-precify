@@ -42,4 +42,7 @@ app.post('/api/product/delete/recipe', db.deleteRecipe);
 app.post('/api/product/update/supply', db.updateSupply);
 app.post('/api/product/delete/supply', db.deleteSupply);
 
+app.post('/api/product/delete', db.deleteAll);
+
+
 app.listen(PORT, () => console.log(`Listening on ${ PORT }`))

@@ -24,6 +24,10 @@ async function recalculate(pool, values) {
     return executeProcedure(pool, "call procedure_recalculate($1,$2,$3);", values);
 }
 
+async function deleteAll(pool, values) {
+    return executeProcedure(pool, "call procedure_delete_all($1);", values);
+}
+
 async function executeProcedure(pool, procedureName, values) {
     try {
         console.log("---------------------");
@@ -42,5 +46,5 @@ async function executeProcedure(pool, procedureName, values) {
 }
 
 module.exports = {
-    executeUpdateQuery, executeDeleteQuery, recalculate
+    executeUpdateQuery, executeDeleteQuery, recalculate, deleteAll
 }

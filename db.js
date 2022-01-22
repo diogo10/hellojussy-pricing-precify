@@ -17,6 +17,8 @@ const recipeRecal = require('./recal-recipes');
 
 const recal = require('./recal');
 
+const deleteAllPro = require('./delete-all');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -202,8 +204,14 @@ const recalculate = async (request, response) => {
   response.status(200).json({ status: (result ? 'OK' : 'NOK') });
 };
 
+const deleteAll = async (request, response) => {
+  var userId  = request.body.userId;
+  var result = await deleteAllPro.executeDeleteAll(pool, userId);
+  response.status(200).json({ status: (result ? 'OK' : 'NOK') });
+};
+
 module.exports = {
   getProducts, createProduct, deleteProduct, getProductGetEdit,
   updateProduct, updateRecipe, deleteRecipe, updateSupply, deleteSupply,
-  recalculate
+  recalculate, deleteAll
 }
