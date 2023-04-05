@@ -6,7 +6,7 @@ drop table products;
 
 
 CREATE TABLE products (
-	id serial4 NOT NULL,
+	id int NOT NULL AUTO_INCREMENT,
 	product_name varchar(100) NULL,
 	userid varchar(100) NOT NULL,
 	profit_percentage varchar(100) NULL,
@@ -19,12 +19,12 @@ CREATE TABLE products (
 	total_extras float8 NULL,
 	created_at timestamp NOT NULL DEFAULT now(),
 	updated_at timestamp NOT NULL DEFAULT now(),
-	CONSTRAINT products_pkey PRIMARY KEY (id)
+	PRIMARY KEY (id)
 );
 
 
 CREATE TABLE products_supplies (
-	id serial4 NOT NULL,
+	id int NOT NULL AUTO_INCREMENT,
 	supply_name varchar(100) NULL,
 	value float8 NULL DEFAULT 0,
 	qt int4 NULL DEFAULT 0,
@@ -32,12 +32,13 @@ CREATE TABLE products_supplies (
 	unit varchar(20) NULL,
 	product_id int4 NULL DEFAULT 0,
 	supply_identity_id varchar(100) NOT NULL,
+	PRIMARY KEY (id),
 	FOREIGN KEY (product_id) REFERENCES products (id)
 );
 
 
 CREATE TABLE products_recipes (
-	id serial4 NOT NULL,
+	id int NOT NULL AUTO_INCREMENT,
 	recipe_name varchar(100) NULL,
 	myprice float8 NULL DEFAULT 0,
 	myprof float8 NULL DEFAULT 0,
@@ -50,13 +51,13 @@ CREATE TABLE products_recipes (
 	margemper varchar(50) NULL,
 	recipe_identity_id varchar(100) NOT NULL,
 	quantity float8 NULL DEFAULT 0,
-	CONSTRAINT products_recipes_pkey PRIMARY KEY (id),
+	PRIMARY KEY (id),
 	FOREIGN KEY (product_id) REFERENCES products (id)
 );
 
 
 CREATE TABLE products_recipes_products (
-	id serial4 NOT null primary key,
+	id int NOT NULL AUTO_INCREMENT,
 	recipe_product_name varchar(100) NULL,
 	value float8 NULL DEFAULT 0,
 	status VARCHAR(20) NULL,
@@ -65,5 +66,6 @@ CREATE TABLE products_recipes_products (
 	unit VARCHAR(20) not NULL,
 	products_recipes_id int4 not null,
 	recipes_products_identity_id varchar(100) NOT NULL,
+	PRIMARY KEY (id),
 	FOREIGN KEY (products_recipes_id) REFERENCES products_recipes (id) ON DELETE CASCADE
 );
