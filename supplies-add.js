@@ -1,12 +1,16 @@
-const text = 'INSERT INTO products_supplies(supply_name, value, qt, qtvalue, unit, product_id, supply_identity_id) ' + 
-'VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+const queries = require("./supplies_queries");
 
 async function queryAddSupplies(pool, parentId, list) {
-
-  const pArray = list.map(async element => {
-
-    var values = [element.name, element.value, element.qt, 
-      element.qtValue, element.unit, parentId, element.id];
+  const pArray = list.map(async (element) => {
+    var values = [
+      element.name,
+      element.value,
+      element.qt,
+      element.qtValue,
+      element.unit,
+      parentId,
+      element.id,
+    ];
 
     const response = await executeQuery(pool, values);
     return response;
@@ -23,16 +27,16 @@ async function queryAddSupplies(pool, parentId, list) {
 
 async function executeQuery(pool, values) {
   try {
-    const response = await pool.query(text, values);
+    const response = await pool.query(queries.SUPPLY_INSERT, values);
     const resultId = response.rows[0].id;
     console.log("add supply id: " + resultId);
     return resultId != null;
   } catch (err) {
-    console.log(err.stack)
+    console.log(err.stack);
     return false;
   }
 }
 
 module.exports = {
-  queryAddSupplies
-}
+  queryAddSupplies,
+};
