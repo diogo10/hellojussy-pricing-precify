@@ -1,4 +1,6 @@
-const text1 = 'SELECT * FROM products WHERE userid = ? and id = ?';
+const queries = require("./products_queries");
+
+const text1 = queries.PRODUCT_GET_BY_ID_AND_USER_ID;
 const text2 = 'SELECT id, supply_identity_id as _id, supply_name as name, value, qt, qtvalue, unit FROM products_supplies WHERE product_id = ?';
 const text3 = 'SELECT id, recipe_identity_id as _id, quantity FROM products_recipes WHERE product_id = ?';
 

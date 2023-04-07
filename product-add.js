@@ -1,7 +1,4 @@
-const text = 'INSERT INTO products' +
-'(product_name, userid, profit_percentage, price,' +
-'product_cost, product_cost_with_tax, product_cost_with_markup, product_cost_with_markup_tax, total_fichas, total_extras) ' +
-'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+const queries = require("./products_queries");
 
 async function queryAddProduct(pool, body) {
 
@@ -20,7 +17,7 @@ async function queryAddProduct(pool, body) {
 
 async function executeQuery(pool, values) {
     try {
-        const response = await pool.query(text, values);
+        const response = await pool.query(queries.PRODUCT_INSERT, values);
         const resultId = response.insertId;
         console.log("add product id: " + resultId);
         return resultId;

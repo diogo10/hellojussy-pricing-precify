@@ -1,8 +1,8 @@
-const text = "SELECT * FROM products WHERE userid = ? ORDER BY id DESC";
+const queries = require("./products_queries");
 
 async function queryGetProduct(pool, userId) {
   try {
-    const list = await pool.query(text, [userId]);
+    const list = await pool.query(queries.PRODUCT_GET_BY_ID, [userId]);
     return list;
   } catch (err) {
     console.log(err.stack);
