@@ -8,6 +8,7 @@ CRUD for precify domain.
 ## Running Locally
 
 ```sh
+brew services start mysql@5.6
 $ npm install
 $ npm start
 ```

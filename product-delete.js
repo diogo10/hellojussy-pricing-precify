@@ -1,4 +1,4 @@
-const text = 'DELETE FROM products WHERE id = $1 RETURNING id';
+const text = 'DELETE FROM products WHERE id = ?';
 
 async function queryDeleteProduct(pool, productId) {
     const list = await executeQuery(pool, [productId]);
@@ -8,7 +8,7 @@ async function queryDeleteProduct(pool, productId) {
 async function executeQuery(pool, values) {
     try {
         const response = await pool.query(text, values);
-        return response.rows[0].id !== null;
+        return response.affectedRows !== null;
     } catch (err) {
         console.log(err.stack)
         return [];

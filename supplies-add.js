@@ -28,7 +28,7 @@ async function queryAddSupplies(pool, parentId, list) {
 async function executeQuery(pool, values) {
   try {
     const response = await pool.query(queries.SUPPLY_INSERT, values);
-    const resultId = response.rows[0].id;
+    const resultId = response.insertId;
     console.log("add supply id: " + resultId);
     return resultId != null;
   } catch (err) {

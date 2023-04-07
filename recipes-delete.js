@@ -1,15 +1,15 @@
 const utils = require('./db-util');
 const recal = require('./recal');
 
-const text1 = 'DELETE FROM products_recipes WHERE product_id = $1 RETURNING id';
+const text1 = 'DELETE FROM products_recipes WHERE product_id = ?';
 
 const text2 = 'DELETE FROM products_recipes ' +
-'WHERE products_recipes.recipe_identity_id = $1 ' +
-'AND product_id in (select id from products where userid = $2);'
+'WHERE products_recipes.recipe_identity_id = ? ' +
+'AND product_id in (select id from products where userid = ?);'
 
 const text3 = 'DELETE FROM products_recipes ' +
-'WHERE products_recipes.id = $1 ' +
-'AND product_id in (select id from products where userid = $2);'
+'WHERE products_recipes.id = ? ' +
+'AND product_id in (select id from products where userid = ?);'
 
 async function queryDeleteRecipesFromProduct(pool, productId) {
     result =  await utils.executeDeleteQuery(pool, text1 ,[productId]);

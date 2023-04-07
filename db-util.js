@@ -8,7 +8,7 @@ async function executeUpdateQuery(pool, sqlUpdateSupplies, values) {
         console.log("\u001b[1;34m executeQuery text: " + sqlUpdateSupplies);
         console.log("");
         const response = await pool.query(sqlUpdateSupplies, values);
-        const result = response.rowCount > 0;
+        const result = response.affectedRows > 0;
         console.log("\u001b[1;34m executeQuery result:" + result);
         console.log("");
         console.log("---------------------");
@@ -34,7 +34,7 @@ async function executeProcedure(pool, procedureName, values) {
         console.log("\u001b[1;34m executeProcedure procedureName: " + procedureName);
         console.log("");
         const response = await pool.query(procedureName, values);
-        const result = response.rowCount >= 0;
+        const result = response.affectedRows >= 0;
         console.log("\u001b[1;34m executeProcedure result: " + result);
         console.log("");
         console.log("---------------------");

@@ -1,10 +1,10 @@
 const text1 = 'INSERT INTO products_recipes(recipe_name, total,' +
 'totalwithtax, yieldvalue, yieldvalueunit, product_id, recipe_identity_id, quantity)'
-  + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id';
+  + ' VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
 
 const text2 = 'INSERT INTO products_recipes_products' +
   '(recipe_product_name, value, status, qt, qtvalue, unit, products_recipes_id, recipes_products_identity_id)'
-  + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id';
+  + ' VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
 
 
 async function queryAddRecipes(pool, parentId, list) {
@@ -50,7 +50,7 @@ async function queryAddRecipes(pool, parentId, list) {
 async function executeRecipeQuery(pool, values) {
   try {
     const response = await pool.query(text1, values);
-    const resultId = response.rows[0].id;
+    const resultId = response.insertId;
     console.log("add recipe id: " + resultId);
     return resultId;
   } catch (err) {
@@ -62,7 +62,7 @@ async function executeRecipeQuery(pool, values) {
 async function executeRecipeProductsQuery(pool, values) {
   try {
     const response = await pool.query(text2, values);
-    const result = response.rows[0].id !== null;
+    const result = response.insertId !== null;
     console.log("add recipe products id: " + result);
     return result;
   } catch (err) {

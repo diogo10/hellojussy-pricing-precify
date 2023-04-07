@@ -1,20 +1,17 @@
-create or replace procedure procedure_delete_all(userIdentify varchar(100))
-language plpgsql
-as $$
-declare
-TABLE_RECORD RECORD;
+create procedure procedure_delete_all(userIdentify varchar(100))
 begin
--- stored procedure body
-	
-	FOR TABLE_RECORD IN SELECT * FROM products where userid = userIdentify
-        LOOP
-            
-        	   delete from products_supplies where product_id = TABLE_RECORD.id;
-        	   delete from products_recipes where product_id = TABLE_RECORD.id;
+declare table_id int;
+set table_id = 0;
+
+ sloop:LOOP
+       		SELECT id into table_id FROM products where userid = userIdentify;
+       		
+       		  delete from products_supplies where product_id = id;
+        	  delete from products_recipes where product_id = id;
            
-   		 END LOOP;
-     delete from products where userid = userIdentify;        
-    return;
-end; $$
+            ITERATE sloop;
+END LOOP;
+delete from products where userid = userIdentify;           
+end;
 
 --CALL public.procedure_delete_all('3DtXXvgec9SBYtgT3whh1fsfaTC3');

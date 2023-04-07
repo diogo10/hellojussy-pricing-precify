@@ -1,36 +1,28 @@
-CREATE OR REPLACE FUNCTION total_supply(productId integer) RETURNS numeric AS
-$$
-declare
-	TABLE_RECORD RECORD;
-    total numeric;
-    currentUnit varchar(10);
-    currentResult numeric;
-begin
+CREATE FUNCTION total_supply(productId int) RETURNS DOUBLE
+BEGIN
 	
-	 total = 0.0;
-	 currentUnit = 'UNID';
-	 currentResult = 0.0;
+declare total DOUBLE;
+declare currentUnit varchar(10);
+declare currentResult DOUBLE;
 
-	 FOR TABLE_RECORD IN SELECT * FROM products_supplies where product_id = productId
+SET total = 0.0;
+SET currentUnit = 'UNID';
+SET currentResult = 0.0;
 
-        LOOP
-            currentUnit = TABLE_RECORD.unit;
-           
-            currentResult = ((TABLE_RECORD.value * TABLE_RECORD.qtvalue) / TABLE_RECORD.qt);
-           
-           if currentUnit = 'KG' then
-    			currentResult = currentResult / 1000;
+
+ sloop:LOOP
+       		SELECT unit, ((value * qtvalue) / qt) into currentUnit, currentResult  FROM products_supplies where product_id = productId;
+       		
+       		if currentUnit = 'KG' then
+    			set currentResult = currentResult / 1000;
   			end if;
            
            
-			total = total + currentResult;
-            currentResult = 0.0;
-        END LOOP;
-	
-	
-	 
-      RETURN ROUND(AVG(total)::numeric,2);   
-END;
-$$ LANGUAGE plpgsql;
+			set total = total + currentResult;
+            set currentResult = 0.0;
+           
+            ITERATE sloop;
+END LOOP;
 
---SELECT total_supply( 2 );
+      RETURN ROUND(AVG(total),2);    
+END;

@@ -1,9 +1,9 @@
-const text1 = 'SELECT * FROM products WHERE userid = $1 and id = $2';
-const text2 = 'SELECT id, supply_identity_id as _id, supply_name as name, value, qt, qtvalue, unit FROM products_supplies WHERE product_id = $1';
-const text3 = 'SELECT id, recipe_identity_id as _id, quantity FROM products_recipes WHERE product_id = $1';
+const text1 = 'SELECT * FROM products WHERE userid = ? and id = ?';
+const text2 = 'SELECT id, supply_identity_id as _id, supply_name as name, value, qt, qtvalue, unit FROM products_supplies WHERE product_id = ?';
+const text3 = 'SELECT id, recipe_identity_id as _id, quantity FROM products_recipes WHERE product_id = ?';
 
 const text4 = 'SELECT id, recipes_products_identity_id as _id, recipe_product_name as name, value, status,' +
-'qt, qtvalue,unit FROM products_recipes_products WHERE products_recipes_id = $1';
+'qt, qtvalue,unit FROM products_recipes_products WHERE products_recipes_id = ?';
 
 async function queryGetProductById(pool, userId, productId) {
     var supplies = [];
@@ -35,34 +35,11 @@ async function queryGetProductById(pool, userId, productId) {
    
 }
 
-async function newQueryGetProductById(pool, userId, productId) {
-    var result = await executeProductQuery(pool, [userId, productId]);
-    var supplies = [];
-    var recipes = [];
-
-    if (result !== null) {
-        supplies = await executeProductSuppliesQuery(pool, [productId]);
-        var recipesDb = await executeProductRecipesQuery(pool, [productId]);
-
-        recipesDb.forEach(async element => {
-            var recipesProducts = await executeProductRecipesProductsQuery(pool, [element.id]);
-            element.products = recipesProducts;
-            recipes.push(element);
-        });
-    }
-
-    var newResult = result[0];
-    newResult.supplies = supplies;
-    newResult.recipes = recipes;
-
-    return newResult;
-}
-
 
 async function executeProductQuery(pool, values) {
     try {
         const response = await pool.query(text1, values);
-        return response.rows;
+        return response;
     } catch (err) {
         console.log(err.stack)
         return null;
@@ -72,7 +49,7 @@ async function executeProductQuery(pool, values) {
 async function executeProductSuppliesQuery(pool, values) {
     try {
         const response = await pool.query(text2, values);
-        return response.rows;
+        return response;
     } catch (err) {
         console.log(err.stack)
         return [];
@@ -82,7 +59,7 @@ async function executeProductSuppliesQuery(pool, values) {
 async function executeProductRecipesQuery(pool, values) {
     try {
         const response = await pool.query(text3, values);
-        return response.rows;
+        return response;
     } catch (err) {
         console.log(err.stack)
         return [];
@@ -92,7 +69,7 @@ async function executeProductRecipesQuery(pool, values) {
 async function executeProductRecipesProductsQuery(pool, values) {
     try {
         const response = await pool.query(text4, values);
-        return response.rows;
+        return response;
     } catch (err) {
         console.log(err.stack)
         return [];
