@@ -231,7 +231,9 @@ const recalculate = async (request, response) => {
 
 const deleteAll = async (request, response) => {
   var userId = request.body.userId;
+  const pool = await getDbConnection();
   var result = await deleteAllPro.executeDeleteAll(pool, userId);
+  await pool.end();
   response.status(200).json({ status: result ? "OK" : "NOK" });
 };
 

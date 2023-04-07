@@ -1,28 +1,34 @@
 CREATE FUNCTION total_supply(productId int) RETURNS DOUBLE
 BEGIN
 	
-declare total DOUBLE;
-declare currentUnit varchar(10);
-declare currentResult DOUBLE;
+DECLARE total DOUBLE;
+DECLARE currentResult DOUBLE;
+
+DECLARE finished INTEGER DEFAULT 0;
+DECLARE MYCURSOR CURSOR FOR select
+    case when unit = 'KG' then ((value * qtvalue) / qt) / 1000
+    else ((value * qtvalue) / qt) END AS total
+    FROM products_supplies where product_id = productId;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
+
 
 SET total = 0.0;
-SET currentUnit = 'UNID';
 SET currentResult = 0.0;
 
+OPEN MYCURSOR;
+sloop: LOOP
+   FETCH MYCURSOR INTO total;
+   IF finished = 1 THEN 
+      LEAVE sloop;
+   END IF;
+	
+ set currentResult = total + currentResult;
 
- sloop:LOOP
-       		SELECT unit, ((value * qtvalue) / qt) into currentUnit, currentResult  FROM products_supplies where product_id = productId;
-       		
-       		if currentUnit = 'KG' then
-    			set currentResult = currentResult / 1000;
-  			end if;
-           
-           
-			set total = total + currentResult;
-            set currentResult = 0.0;
-           
-            ITERATE sloop;
-END LOOP;
+END LOOP sloop;
+CLOSE MYCURSOR;
 
-      RETURN ROUND(AVG(total),2);    
+	RETURN currentResult;    
 END;
+
+
+--SELECT total_supply( 8 );
