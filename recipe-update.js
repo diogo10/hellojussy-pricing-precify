@@ -1,13 +1,6 @@
 const utils = require('./db-util');
-
-const sqlUpdate =
-    'UPDATE products_recipes SET ' +
-    'recipe_name=$1, myprice=$2, myprof=$3, profit=$4, total=$5,' +
-    'totalwithtax=$6, yieldvalue=$7, yieldvalueunit=$8,' +
-    'margemper=$9 ' +
-    'FROM (SELECT id FROM products where userid = $10) AS subquery ' +
-    'WHERE recipe_identity_id= $11 RETURNING products_recipes.id;';
-
+const queries = require("./recipes_queries");
+const sqlUpdate = queries.RECIPE_UPDATE_BY_USER;
 
 async function queryUpdateRecipes(pool, body, userId) {
 

@@ -1,11 +1,7 @@
-const text1 = 'INSERT INTO products_recipes(recipe_name, total,' +
-'totalwithtax, yieldvalue, yieldvalueunit, product_id, recipe_identity_id, quantity)'
-  + ' VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
+const queries = require("./recipes_queries");
 
-const text2 = 'INSERT INTO products_recipes_products' +
-  '(recipe_product_name, value, status, qt, qtvalue, unit, products_recipes_id, recipes_products_identity_id)'
-  + ' VALUES(?, ?, ?, ?, ?, ?, ?, ?)';
-
+const text1 = queries.RECIPE_INSERT;
+const text2 = queries.RECIPE_INSERT_PRODUCTS;
 
 async function queryAddRecipes(pool, parentId, list) {
   console.log("queryAddRecipes: " + parentId);

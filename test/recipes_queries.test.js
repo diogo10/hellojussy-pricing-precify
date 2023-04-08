@@ -16,4 +16,34 @@ describe("Should validate queries for RECIPES", () => {
 
     assert.strictEqual(MOCK, queries.RECIPE_PRODUCTS_SELECT_BY_ID);
   });
+
+  it("RECIPE_UPDATE_BY_USER", () => {
+    const MOCK =
+      "UPDATE products_recipes SET " +
+      "recipe_name=?, myprice=?, myprof=?, profit=?, total=?," +
+      "totalwithtax=?, yieldvalue=?, yieldvalueunit=?," +
+      "margemper=? " +
+      "FROM (SELECT id FROM products where userid = ?) AS subquery " +
+      "WHERE recipe_identity_id= ?";
+
+    assert.strictEqual(MOCK, queries.RECIPE_UPDATE_BY_USER);
+  });
+
+  it("RECIPE_INSERT", () => {
+    const MOCK =
+      "INSERT INTO products_recipes(recipe_name, total," +
+      "totalwithtax, yieldvalue, yieldvalueunit, product_id, recipe_identity_id, quantity)" +
+      " VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+
+    assert.strictEqual(MOCK, queries.RECIPE_INSERT);
+  });
+
+  it("RECIPE_INSERT_PRODUCTS", () => {
+    const MOCK =
+      "INSERT INTO products_recipes_products" +
+      "(recipe_product_name, value, status, qt, qtvalue, unit, products_recipes_id, recipes_products_identity_id)" +
+      " VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+
+    assert.strictEqual(MOCK, queries.RECIPE_INSERT_PRODUCTS);
+  });
 });
