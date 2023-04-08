@@ -24,4 +24,11 @@ describe('Should validate queries for supplies', () => {
 
         assert.strictEqual(MOCK, queries.DELETE_BY_IN_AND_USER);
     });
+
+    it('SUPPLY_SELECT_BY_PRODUCT_ID', () => {
+
+        const MOCK = 'SELECT id, supply_identity_id as _id, supply_name as name, value, qt, qtvalue, unit FROM products_supplies WHERE product_id = ?';
+
+        assert.strictEqual(MOCK, queries.SUPPLY_SELECT_BY_PRODUCT_ID);
+    });
 });

@@ -1,11 +1,11 @@
 const queries = require("./products_queries");
+const queriesSupplies = require("./supplies_queries");
+const queriesRecipes = require("./recipes_queries");
 
 const text1 = queries.PRODUCT_GET_BY_ID_AND_USER_ID;
-const text2 = 'SELECT id, supply_identity_id as _id, supply_name as name, value, qt, qtvalue, unit FROM products_supplies WHERE product_id = ?';
-const text3 = 'SELECT id, recipe_identity_id as _id, quantity FROM products_recipes WHERE product_id = ?';
-
-const text4 = 'SELECT id, recipes_products_identity_id as _id, recipe_product_name as name, value, status,' +
-'qt, qtvalue,unit FROM products_recipes_products WHERE products_recipes_id = ?';
+const text2 = queriesSupplies.SUPPLY_SELECT_BY_PRODUCT_ID;
+const text3 = queriesRecipes.RECIPE_SELECT_BY_ID;
+const text4 = queriesRecipes.RECIPE_PRODUCTS_SELECT_BY_ID;
 
 async function queryGetProductById(pool, userId, productId) {
     var supplies = [];
