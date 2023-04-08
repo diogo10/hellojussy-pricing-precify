@@ -1,54 +1,58 @@
-create or replace procedure procedure_recalculate(totalTax numeric, markupPer numeric, 
-userIdentify varchar(100))
-language plpgsql
-as $$
-declare
-TABLE_RECORD RECORD;
-productCost numeric;
-productCostWithTax numeric;
-productCostWithMarkup numeric;
-productCostWithMarkupAndTax numeric;
-totalSupplies numeric;
-totalRecipes numeric;
+create procedure procedure_recalculate(totalTax double, markupPer double, userIdentify varchar(100))
 begin
--- stored procedure body
-	
-	 productCost = 0.0;
-	 productCostWithTax = 0.0;
-	 productCostWithMarkup = 0.0;
-	 productCostWithMarkupAndTax = 0.0;
-	 totalSupplies = 0.0;
-	 totalRecipes = 0.0;
-	
-	FOR TABLE_RECORD IN SELECT * FROM products where userid = userIdentify
+DECLARE productCost double;
+DECLARE productCostWithTax double;
+DECLARE productCostWithMarkup double;
+DECLARE productCostWithMarkupAndTax double;
+DECLARE totalSupplies double;
+DECLARE totalRecipes double;
+DECLARE table_id int;
+DECLARE finished int DEFAULT 0;
+DECLARE MYCURSOR CURSOR FOR SELECT id FROM products where userid = userIdentify;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET finished = 1;
 
-        LOOP
-            
-               totalSupplies = (SELECT total_supply(TABLE_RECORD.id));
-               totalRecipes = (SELECT total_recipes(TABLE_RECORD.id));
-               productCost = totalSupplies + totalRecipes;
-               productCostWithTax = productCost + ((productCost * totalTax) / 100);
-               productCostWithMarkup = productCost + ((productCost * markupPer) / 100);
-               productCostWithMarkupAndTax = productCostWithMarkup + ((productCostWithMarkup * totalTax) / 100);
-           
-           
-	           UPDATE products SET product_cost = productCost, product_cost_with_tax = productCostWithTax,
+	
+	 set productCost = 0.0;
+	 set productCostWithTax = 0.0;
+	 set productCostWithMarkup = 0.0;
+	 set productCostWithMarkupAndTax = 0.0;
+	 set totalSupplies = 0.0;
+	 set totalRecipes = 0.0;
+	 set table_id = 0;
+
+OPEN MYCURSOR;
+sloop: LOOP
+   FETCH MYCURSOR INTO table_id;
+   IF finished = 1 THEN 
+      LEAVE sloop;
+   END IF;
+	
+  			   -- LOGIC
+   			   set totalSupplies = (SELECT total_supply(table_id));
+               set totalRecipes = (SELECT  total_recipes(table_id));
+               set productCost = totalSupplies + totalRecipes;
+               set productCostWithTax = productCost + ((productCost * totalTax) / 100);
+               set productCostWithMarkup = productCost + ((productCost * markupPer) / 100);
+               set productCostWithMarkupAndTax = productCostWithMarkup + ((productCostWithMarkup * totalTax) / 100);
+  			   
+               UPDATE products SET product_cost = productCost, product_cost_with_tax = productCostWithTax,
 	           product_cost_with_markup  = productCostWithMarkup, 
 	           product_cost_with_markup_tax = productCostWithMarkupAndTax,
-	           total_fichas = totalRecipes, total_extras = totalSupplies 
-	           where id = TABLE_RECORD.id;
+	           total_fichas = totalRecipes, total_extras = totalSupplies;
 	          
-	           productCost = 0.0;
-		 	   productCostWithTax = 0.0;
-		 	   productCostWithMarkup = 0.0;
-		 	   productCostWithMarkupAndTax = 0.0;
-			   totalSupplies = 0.0;
-		 	   totalRecipes = 0.0;
-           
-   		 END LOOP;
-   
-    return;
+	           set productCost = 0.0;
+		 	   set productCostWithTax = 0.0;
+		 	   set productCostWithMarkup = 0.0;
+		 	   set productCostWithMarkupAndTax = 0.0;
+			   set totalSupplies = 0.0;
+		 	   set totalRecipes = 0.0;
+  
+
+END LOOP sloop;
+CLOSE MYCURSOR;
 	
-end; $$
+end;
+
+
 
 --CALL public.procedure_recalculate(23,39,'3DtXXvgec9SBYtgT3whh1fsfaTC3');
