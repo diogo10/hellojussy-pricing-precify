@@ -23,10 +23,31 @@ const RECIPE_INSERT_PRODUCTS =
   "(recipe_product_name, value, status, qt, qtvalue, unit, products_recipes_id, recipes_products_identity_id)" +
   " VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
 
+const RECIPE_DELETE = "DELETE FROM products_recipes WHERE product_id = ?";
+
+const RECIPE_DELETE_BY_USER =
+  "DELETE FROM products_recipes " +
+  "WHERE products_recipes.recipe_identity_id = ? " +
+  "AND product_id in (select id from products where userid = ?);";
+
+const RECIPE_DELETE_BY_USER_RECIPE_ID =
+  "DELETE FROM products_recipes " +
+  "WHERE products_recipes.id = ? " +
+  "AND product_id in (select id from products where userid = ?);";
+
+const RECIPE_SELECT_GET_BY_ID =
+  "select * from products_recipes pr " +
+  "WHERE pr.recipe_identity_id = ?" +
+  "AND product_id in (select id from products where userid = ?)";
+
 module.exports = {
   RECIPE_SELECT_BY_ID,
   RECIPE_PRODUCTS_SELECT_BY_ID,
   RECIPE_UPDATE_BY_USER,
   RECIPE_INSERT,
   RECIPE_INSERT_PRODUCTS,
+  RECIPE_DELETE,
+  RECIPE_DELETE_BY_USER,
+  RECIPE_DELETE_BY_USER_RECIPE_ID,
+  RECIPE_SELECT_GET_BY_ID,
 };

@@ -46,4 +46,37 @@ describe("Should validate queries for RECIPES", () => {
 
     assert.strictEqual(MOCK, queries.RECIPE_INSERT_PRODUCTS);
   });
+
+  it("RECIPE_DELETE", () => {
+    const MOCK = "DELETE FROM products_recipes WHERE product_id = ?";
+
+    assert.strictEqual(MOCK, queries.RECIPE_DELETE);
+  });
+
+  it("RECIPE_DELETE_BY_USER", () => {
+    const MOCK =
+      "DELETE FROM products_recipes " +
+      "WHERE products_recipes.recipe_identity_id = ? " +
+      "AND product_id in (select id from products where userid = ?);";
+
+    assert.strictEqual(MOCK, queries.RECIPE_DELETE_BY_USER);
+  });
+
+  it("RECIPE_DELETE_BY_USER_RECIPE_ID", () => {
+    const MOCK =
+      "DELETE FROM products_recipes " +
+      "WHERE products_recipes.id = ? " +
+      "AND product_id in (select id from products where userid = ?);";
+
+    assert.strictEqual(MOCK, queries.RECIPE_DELETE_BY_USER_RECIPE_ID);
+  });
+
+  it("RECIPE_DELETE_BY_USER_RECIPE_ID", () => {
+    const MOCK =
+      "select * from products_recipes pr " +
+      "WHERE pr.recipe_identity_id = ?" +
+      "AND product_id in (select id from products where userid = ?)";
+
+    assert.strictEqual(MOCK, queries.RECIPE_SELECT_GET_BY_ID);
+  });
 });
