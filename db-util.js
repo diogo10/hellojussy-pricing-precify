@@ -21,7 +21,7 @@ async function executeUpdateQuery(pool, sqlUpdateSupplies, values) {
 
 
 async function recalculate(pool, values) {
-    return executeProcedure(pool, "CALL procedure_recalculate($1,$2,$3);", values);
+    return executeProcedure(pool, "CALL procedure_recalculate(?,?,?);", values);
 }
 
 async function deleteAll(pool, values) {

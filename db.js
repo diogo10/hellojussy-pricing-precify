@@ -128,6 +128,7 @@ const updateProduct = async (request, response) => {
     await pool.end();
     response.send({ status: "OK" });
   } else {
+    await pool.end();
     response.send({ status: "NOK" });
   }
 };
@@ -147,6 +148,7 @@ const updateRecipe = async (request, response) => {
   const body = request.body;
   const userId = extractToken(request);
   const id = body.id;
+  const pool = await getDbConnection();
 
   var list = await recipeGet.queryGetRecipes(pool, id, userId);
   var result = await recipeRecal.recalRecipe(pool, body, userId, list);
@@ -155,6 +157,7 @@ const updateRecipe = async (request, response) => {
     recal.executeRecalculate(pool, userId);
   }
 
+  await pool.end();
   response.status(200).json({ status: result ? "OK" : "NOK" });
 };
 
@@ -166,6 +169,7 @@ const updateRecipe = async (request, response) => {
 const deleteRecipe = async (request, response) => {
   const recipeId = request.body.id;
   const userId = extractToken(request);
+  const pool = await getDbConnection();
   var hasDeleted = await recipeDelete.queryDeleteRecipeWith(
     pool,
     recipeId,
@@ -176,7 +180,7 @@ const deleteRecipe = async (request, response) => {
   if (hasDeleted) {
     recal.executeRecalculate(pool, userId);
   }
-
+  await pool.end();
   response.status(200).json({ status: hasDeleted ? "OK" : "NOK" });
 };
 
@@ -190,6 +194,7 @@ const deleteRecipe = async (request, response) => {
 const updateSupply = async (request, response) => {
   const supply = request.body;
   const userId = extractToken(request);
+  const pool = await getDbConnection();
 
   var hasUpdated = await suppliesUpdate.updateSupplies(pool, supply, userId);
   console.log("updateSupply: " + hasUpdated);
@@ -197,7 +202,7 @@ const updateSupply = async (request, response) => {
   if (hasUpdated) {
     recal.executeRecalculate(pool, userId);
   }
-
+  await pool.end();
   response.status(200).json({ status: hasUpdated ? "OK" : "NOK" });
 };
 
@@ -208,6 +213,7 @@ const updateSupply = async (request, response) => {
  */
 const deleteSupply = async (request, response) => {
   const supplyId = request.body.id;
+  const pool = await getDbConnection();
   const userId = extractToken(request);
   var hasDeleted = await suppliesDelete.queryDeleteSupplyByRemoteId(
     pool,
@@ -219,13 +225,15 @@ const deleteSupply = async (request, response) => {
   if (hasDeleted) {
     recal.executeRecalculate(pool, userId);
   }
-
+  await pool.end();
   response.status(200).json({ status: hasDeleted ? "OK" : "NOK" });
 };
 
 const recalculate = async (request, response) => {
   const userId = extractToken(request);
+  const pool = await getDbConnection();
   var result = await recal.executeRecalculate(pool, userId);
+  await pool.end();
   response.status(200).json({ status: result ? "OK" : "NOK" });
 };
 

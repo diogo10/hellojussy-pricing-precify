@@ -2,7 +2,8 @@
 	"info": {
 		"_postman_id": "29e4ac26-ce6c-4f49-b72c-a1562a10f466",
 		"name": "HelloJussy - Precify",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "390564"
 	},
 	"item": [
 		{
@@ -14,6 +15,11 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -55,6 +61,21 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Validate size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.product_name + \"\").to.eql(\"hhhg\");",
+							"    pm.expect(jsonData.userid + \"\").to.eql(\"3DtXXvgec9SBYtgT3whh1fsfaTC3\");",
+							"    pm.expect(jsonData.price + \"\").to.eql(\"9\");",
+							"    pm.expect(jsonData.product_cost + \"\").to.eql(\"1.87\");",
+							"    pm.expect(jsonData.product_cost_with_tax + \"\").to.eql(\"2.3001\");",
+							"    pm.expect(jsonData.product_cost_with_markup + \"\").to.eql(\"2.6137488666666666\");",
 							"});"
 						],
 						"type": "text/javascript"
@@ -97,6 +118,16 @@
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Validate size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status + \"\").to.eql(\"OK\");",
 							"});"
 						],
 						"type": "text/javascript"
@@ -118,7 +149,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": 0,\n    \"name\": \"hhhg\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": 60,\n    \"price\": 9.0,\n    \"cost\": 1.87,\n    \"costWithTax\": 2.3001,\n    \"totalFichas\": 1.87,\n    \"totalExtras\": 0.0,\n    \"costWithMarkup\": 2.6137488666666666,\n    \"costWithMarkupTax\": 3.2149111059999997,\n    \"supplies\": [],\n    \"recipes\": [\n        {\n            \"id\": \"61b49f58dc7bf733df1906b4\",\n            \"name\": \"Brigadeiro\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": -2.30,\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": 1.87,\n            \"totalWithTax\": 2.30,\n            \"yieldValue\": 460.0,\n            \"yieldValueUnit\": 23.0,\n            \"weightValueUnit\": 20.0,\n            \"quantity\": 460.0,\n            \"products\": [\n                {\n                    \"id\": \"61b485ca1940d0000903e6da\",\n                    \"name\": \"Forminha\",\n                    \"value\": 23,\n                    \"status\": \"active\",\n                    \"qt\": 100.0,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"UN\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"61b485b11940d0000903e6d9\",\n                    \"name\": \"Granulado\",\n                    \"value\": 70,\n                    \"status\": \"active\",\n                    \"qt\": 1000.0,\n                    \"qtValue\": 4.75,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"617af026734d470009fe55e3\",\n                    \"name\": \"Glucose\",\n                    \"value\": 15,\n                    \"status\": \"active\",\n                    \"qt\": 1000.0,\n                    \"qtValue\": 6.0,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"615461e076739000097a0d83\",\n                    \"name\": \"leite condensado\",\n                    \"value\": 397,\n                    \"status\": \"active\",\n                    \"qt\": 397.0,\n                    \"qtValue\": 0.99,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                }\n            ]\n        }\n    ]\n}",
+					"raw": "{\n    \"id\": 0,\n    \"name\": \"hhhg\",\n    \"userId\": \"3DtXXvgec9SBYtgT3whh1fsfaTC3\",\n    \"prof\": 60,\n    \"price\": 9.0,\n    \"cost\": 1.87,\n    \"costWithTax\": 2.3001,\n    \"totalFichas\": 1.87,\n    \"totalExtras\": 0.0,\n    \"costWithMarkup\": 2.6137488666666666,\n    \"costWithMarkupTax\": 3.2149111059999997,\n    \"supplies\": [\n        {\n            \"id\": \"j23jdhskhdsud\",\n            \"name\": \"Embalagem\",\n            \"value\": 1,\n            \"status\": \"active\",\n            \"qt\": 5,\n            \"qtValue\": 1.0,\n            \"unit\": \"UN\",\n            \"lossPer\": 0\n        },\n        {\n            \"id\": \"kdsiudsidus\",\n            \"name\": \"Laço\",\n            \"value\": 1,\n            \"status\": \"active\",\n            \"qt\": 10,\n            \"qtValue\": 0.50,\n            \"unit\": \"UN\",\n            \"lossPer\": 0\n        }\n    ],\n    \"recipes\": [\n        {\n            \"id\": \"61b49f58dc7bf733df1906b4\",\n            \"name\": \"Brigadeiro\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": -2.30,\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": 1.87,\n            \"totalWithTax\": 2.30,\n            \"yieldValue\": 460.0,\n            \"yieldValueUnit\": 23.0,\n            \"weightValueUnit\": 20.0,\n            \"quantity\": 460.0,\n            \"products\": [\n                {\n                    \"id\": \"61b485ca1940d0000903e6da\",\n                    \"name\": \"Forminha\",\n                    \"value\": 23,\n                    \"status\": \"active\",\n                    \"qt\": 100.0,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"UN\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"61b485b11940d0000903e6d9\",\n                    \"name\": \"Granulado\",\n                    \"value\": 70,\n                    \"status\": \"active\",\n                    \"qt\": 1000.0,\n                    \"qtValue\": 4.75,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"617af026734d470009fe55e3\",\n                    \"name\": \"Glucose\",\n                    \"value\": 15,\n                    \"status\": \"active\",\n                    \"qt\": 1000.0,\n                    \"qtValue\": 6.0,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                },\n                {\n                    \"id\": \"615461e076739000097a0d83\",\n                    \"name\": \"leite condensado\",\n                    \"value\": 397,\n                    \"status\": \"active\",\n                    \"qt\": 397.0,\n                    \"qtValue\": 0.99,\n                    \"unit\": \"KG\",\n                    \"lossPer\": 0\n                }\n            ]\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -193,6 +224,29 @@
 		},
 		{
 			"name": "Delete Product",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Validate size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status + \"\").to.eql(\"OK\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -207,14 +261,14 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{url}}/api/product/2",
+					"raw": "{{url}}/api/product/1",
 					"host": [
 						"{{url}}"
 					],
 					"path": [
 						"api",
 						"product",
-						"2"
+						"1"
 					]
 				}
 			},
@@ -329,6 +383,29 @@
 		},
 		{
 			"name": "Delete All",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Validate size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status + \"\").to.eql(\"OK\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
