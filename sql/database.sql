@@ -4,7 +4,6 @@ drop table products_recipes;
 drop table products;
 
 
-
 CREATE TABLE products (
 	id serial4 NOT NULL,
 	product_name varchar(100) NULL,
