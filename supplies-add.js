@@ -1,5 +1,5 @@
-const text = 'INSERT INTO products_supplies(supply_name, value, qt, qtvalue, unit, product_id, supply_identity_id) ' + 
-'VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id';
+const queries = require("./supplies_queries");
+const text = queries.SUPPLY_INSERT;
 
 async function queryAddSupplies(pool, parentId, list) {
 
