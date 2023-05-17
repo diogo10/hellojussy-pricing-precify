@@ -3,7 +3,8 @@
 CRUD for precify domain.
 
 - Database: Postgres
-- URL: 
+- URL: https://hellojussy-pricing-precify.vercel.app
+- Host: Vercel
 
 ## Running Locally
 
@@ -13,11 +14,10 @@ $ brew services start postgresql@14
 $ npm start
 ```
 
-## Google Cloud
-
-`
-gcloud functions deploy hellopricing --entry-point hellopricing --runtime nodejs16 --trigger-http --project hellojussypricingcloud --allow-unauthenticated
-gcloud functions describe hellopricing
-`
-
 Your app should now be running on [localhost:3000](http://localhost:3000/).
+
+
+## Deploy
+
+- Create a PR
+- Vercel will deploy when the changes are merged
