@@ -1,7 +1,7 @@
 {
-  "name": "node-js-getting-started",
+  "name": "hellojussy-pricing-precify",
   "version": "0.3.0",
-  "description": "A sample Node.js app using Express 4",
+  "description": "hello jussy pricing domain",
   "engines": {
     "node": "14.x"
   },
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/heroku/node-js-getting-started"
+    "url": "https://github.com/diogo10/hellojussy-pricing-precify"
   },
   "keywords": [
     "node",
