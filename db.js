@@ -21,7 +21,7 @@ const deleteAllPro = require('./delete-all');
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? true : false
+  ssl: false
 });
 
 function extractToken(req) {
