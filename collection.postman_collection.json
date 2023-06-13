@@ -273,6 +273,29 @@
 		},
 		{
 			"name": "Recalculate - Update Recipe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Validate size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status + \"\").to.eql(\"OK\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -288,7 +311,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"619a2eb27bfa5e0009c2979d\",\n    \"name\": \"bsidhd6\",\n    \"myPrice\": 0.0,\n    \"myProf\": 0.0,\n    \"profit\": -1.65,\n    \"profMargemPer\": \"-100.00%\",\n    \"total\": 1.34,\n    \"totalWithTax\": 1.65,\n    \"yieldValue\": 8000.0,\n    \"yieldValueUnit\": 100.0,\n    \"products\": [\n        {\n            \"id\": \"617b0bc539124500083ed40c\",\n            \"name\": \"café solúvel\",\n            \"value\": 100,\n            \"status\": \"active\",\n            \"qt\": 200,\n            \"qtValue\": 2.69,\n            \"unit\": \"KG\"\n        }\n    ]\n}",
+					"raw": "{\n            \"id\": \"oiiopii\",\n            \"name\": \"Brigadeiro NEW\",\n            \"myPrice\": 0.0,\n            \"myProf\": 0.0,\n            \"profit\": -2.30,\n            \"profMargemPer\": \"-100.00%\",\n            \"total\": 1.87,\n            \"totalWithTax\": 2.30,\n            \"yieldValue\": 460.0,\n            \"yieldValueUnit\": 23.0,\n            \"weightValueUnit\": 20.0,\n            \"quantity\": 460.0,\n            \"products\": [\n                {\n                    \"id\": \"61b485ca1940d0000903e6da\",\n                    \"name\": \"Forminha\",\n                    \"value\": 23,\n                    \"status\": \"active\",\n                    \"qt\": 100.0,\n                    \"qtValue\": 2.0,\n                    \"unit\": \"UN\",\n                    \"lossPer\": 0\n                }\n            ]\n        }",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -311,7 +334,30 @@
 			"response": []
 		},
 		{
-			"name": "Recalculate - Remove Supply",
+			"name": "Recalculate - Delete Recipe",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Validate size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status + \"\").to.eql(\"OK\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -327,7 +373,69 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"id\": \"617b0bf239124500083ed40d\"\n}",
+					"raw": "{\n    \"id\": \"61b49f58dc7bf733df1906b4\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/product/delete/recipe",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"product",
+						"delete",
+						"recipe"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recalculate - Remove Supply",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Validate size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status + \"\").to.eql(\"OK\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "3DtXXvgec9SBYtgT3whh1fsfaTC3",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"j23jdhskhdsud\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -343,6 +451,68 @@
 						"api",
 						"product",
 						"delete",
+						"supply"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Recalculate - Update Supply",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"    ",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});",
+							"",
+							"pm.test(\"Validate size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status + \"\").to.eql(\"OK\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "3DtXXvgec9SBYtgT3whh1fsfaTC3",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"id\": \"kdsiudsidus\",\n    \"name\": \"Laço\",\n    \"value\": 2,\n    \"status\": \"active\",\n    \"qt\": 10,\n    \"qtValue\": 0.55,\n    \"unit\": \"UN\",\n    \"lossPer\": 0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/api/product/update/supply",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"product",
+						"update",
 						"supply"
 					]
 				}
