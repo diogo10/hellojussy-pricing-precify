@@ -7,7 +7,7 @@ describe("mapSupplyBody validations ", () => {
       name: "A",
     });
 
-    assert.strictEqual(result[5], "");
+    assert.strictEqual(result[4], "");
   });
 
   it("mapSupplyBody - with id", () => {
@@ -16,23 +16,6 @@ describe("mapSupplyBody validations ", () => {
       id: "1",
     });
 
-    assert.strictEqual(result[5], "1");
-  });
-
-  it("mapSupplyBody - with no value", () => {
-    let result = supplyUpdates.mapSupplyBody({
-      name: "A",
-    });
-
-    assert.strictEqual(result[4], 0);
-  });
-
-  it("mapSupplyBody - with value", () => {
-    let result = supplyUpdates.mapSupplyBody({
-      name: "A",
-      value: 10,
-    });
-
-    assert.strictEqual(result[4], 10);
+    assert.strictEqual(result[4], "1");
   });
 });

@@ -17,10 +17,17 @@ const SUPPLY_UPDATE =
   "where supply_identity_id=$6 " +
   "AND product_id in (select id from products where userid = $7)";
 
+  const SUPPLY_UPDATE_TRIGGER_EVENT =
+  "UPDATE products_supplies SET " +
+  "supply_name=$1, qt=$2, qtvalue=$3, unit=$4" +
+  "where supply_identity_id=$5 " +
+  "AND product_id in (select id from products where userid = $6)";
+
 module.exports = {
   SUPPLY_INSERT,
   DELETE_BY_ID,
   DELETE_BY_IN_AND_USER,
   SUPPLY_SELECT_BY_PRODUCT_ID,
   SUPPLY_UPDATE,
+  SUPPLY_UPDATE_TRIGGER_EVENT
 };

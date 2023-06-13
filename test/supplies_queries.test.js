@@ -38,4 +38,13 @@ describe("Should validate queries for supplies", () => {
       "AND product_id in (select id from products where userid = $7)";
     assert.strictEqual(MOCK, queries.SUPPLY_UPDATE);
   });
+
+  it("SUPPLY_UPDATE_TRIGGER_EVENT", () => {
+    const MOCK =
+      "UPDATE products_supplies SET " +
+      "supply_name=$1, qt=$2, qtvalue=$3, unit=$4" +
+      "where supply_identity_id=$5 " +
+      "AND product_id in (select id from products where userid = $6)";
+    assert.strictEqual(MOCK, queries.SUPPLY_UPDATE_TRIGGER_EVENT);
+  });
 });
