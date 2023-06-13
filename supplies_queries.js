@@ -13,9 +13,9 @@ const SUPPLY_SELECT_BY_PRODUCT_ID =
 
 const SUPPLY_UPDATE =
   "UPDATE products_supplies SET " +
-  "supply_name=$1, qt=$2, qtvalue=$3, unit=$4 " +
-  "where supply_identity_id=$5 " +
-  "AND product_id in (select id from products where userid = $6)";
+  "supply_name=$1, qt=$2, qtvalue=$3, unit=$4, value=$5 " +
+  "where supply_identity_id=$6 " +
+  "AND product_id in (select id from products where userid = $7)";
 
 module.exports = {
   SUPPLY_INSERT,

@@ -2,7 +2,7 @@
 
 CRUD for precify domain.
 
-- Database: Postgres
+- Database: Postgres (Supabase)
 - URL: https://hellojussy-pricing-precify.vercel.app
 - Host: Vercel
 
