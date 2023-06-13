@@ -1,40 +1,35 @@
-const utils = require('./db-util');
-const recal = require('./recal');
-
-const text1 = 'DELETE FROM products_recipes WHERE product_id = $1 RETURNING id';
-
-const text2 = 'DELETE FROM products_recipes ' +
-'WHERE products_recipes.recipe_identity_id = $1 ' +
-'AND product_id in (select id from products where userid = $2);'
-
-const text3 = 'DELETE FROM products_recipes ' +
-'WHERE products_recipes.id = $1 ' +
-'AND product_id in (select id from products where userid = $2);'
+const utils = require("./db-util");
+const recal = require("./recal");
+const queries = require("./recipes_queries");
 
 async function queryDeleteRecipesFromProduct(pool, productId) {
-    result =  await utils.executeDeleteQuery(pool, text1 ,[productId]);
-    return result
+  result = await utils.executeDeleteQuery(pool, queries.DELETE_RECIPE, [
+    productId,
+  ]);
+  return result;
 }
 
 async function queryDeleteRecipeWith(pool, recipeId, userId) {
+  var hasDeleted = await utils.executeDeleteQuery(
+    pool,
+    queries.DELETE_RECIPE_PRODUCTS,
+    [recipeId, userId]
+  );
 
-    var result = await utils.executeDeleteQuery(pool, 
-        text2 ,[recipeId, userId]);
-
-     if (result) {
-        recal.executeRecalculate(userId);
-     }
-
-    return result
+  return hasDeleted;
 }
 
-
 async function queryDeleteRecipeById(pool, id, userId) {
-    result =  await utils.executeDeleteQuery(pool, text3 ,[id, userId]);
-    return result
+  result = await utils.executeDeleteQuery(
+    pool,
+    queries.DELETE_RECIPE_WITH_USER,
+    [id, userId]
+  );
+  return result;
 }
 
 module.exports = {
-    queryDeleteRecipesFromProduct, queryDeleteRecipeWith, 
-    queryDeleteRecipeById
-}
+  queryDeleteRecipesFromProduct,
+  queryDeleteRecipeWith,
+  queryDeleteRecipeById,
+};

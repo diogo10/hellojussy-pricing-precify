@@ -154,13 +154,18 @@ const updateRecipe = async (request, response) => {
   const id = body.id;
 
   var list = await recipeGet.queryGetRecipes(pool, id, userId);
-  var result = await recipeRecal.recalRecipe(pool, body, userId, list);
 
-  if (result) {
-    recal.executeRecalculate(pool, userId);
+  if (list?.length) {
+    var result = await recipeRecal.recalRecipe(pool, body, userId, list);
+
+    if (result) {
+      recal.executeRecalculate(pool, userId);
+    }
+
+    response.status(200).json({ status: result ? "OK" : "NOK" });
+  } else {
+    response.status(200).json({ status: "NOK", message: "no recipe found" });
   }
-
-  response.status(200).json({ status: result ? "OK" : "NOK" });
 };
 
 /**
