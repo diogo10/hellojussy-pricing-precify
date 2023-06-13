@@ -1,6 +1,6 @@
 const utils = require("./db-util");
 const queries = require("./supplies_queries");
-const sql = queries.SUPPLY_UPDATE;
+const sql = queries.SUPPLY_UPDATE_TRIGGER_EVENT;
 
 async function updateSupplies(pool, supply, userId) {
   var values = mapSupplyBody(supply, userId);
@@ -10,11 +10,6 @@ async function updateSupplies(pool, supply, userId) {
 
 function mapSupplyBody(supply, userId) {
   var id = supply.id;
-  var value = supply.value;
-
-  if (value === undefined) {
-    value = 0;
-  }
 
   if (id === undefined) {
     id = supply._id;
@@ -29,7 +24,6 @@ function mapSupplyBody(supply, userId) {
     supply.qt,
     supply.qtValue,
     supply.unit,
-    value,
     id,
     userId,
   ];
