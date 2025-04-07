@@ -24,6 +24,9 @@ async function queryGetProductById(pool, userId, productId) {
         const productRecipes = await Promise.all(pArray);
 
         var newResult = result[0];
+        if (newResult === undefined) {
+            return [];
+        }
         newResult.supplies = supplies;
         newResult.recipes = productRecipes;
     
