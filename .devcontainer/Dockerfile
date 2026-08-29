@@ -1,4 +1,4 @@
-FROM node:16-slim
+FROM node:24-slim
 
 RUN apt-get update
 RUN apt-get install -y curl git unzip xz-utils zip libglu1-mesa python3 python3-pip gh jq
