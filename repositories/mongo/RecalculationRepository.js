@@ -1,45 +1,119 @@
-import { Db } from 'mongodb';
-import { IRecalculationRepository } from '../interfaces/index.js';
+const { Db, Collection } = require('mongodb');
+const { BaseRepository } = require('./BaseRepository.js');
 
-export class MongoRecalculationRepository implements IRecalculationRepository {
-  constructor(private db: Db) {}
+const COLLECTION_PRODUCTS = 'products';
+const COLLECTION_SUPPLIES = 'supplies';
+const COLLECTION_RECIPES = 'recipes';
+const COLLECTION_RECIPE_PRODUCTS = 'recipe_products';
 
-  async executeRecalculate(tax: number, markup: number, userId: string): Promise<boolean> {
-    // In MongoDB, we would typically use an aggregation pipeline or update many
-    // This is a placeholder implementation - actual logic depends on MongoDB schema
-    const products = this.db.collection('products');
-    
-    // Example: Update all products for user with recalculated values
-    // This is a simplified version - real implementation would compute values
-    const result = await products.updateMany(
-      { userid: userId },
-      { 
-        $set: { 
-          product_cost_with_tax: { $multiply: ['$product_cost', { $divide: [tax, 100] }] },
-          product_cost_with_markup: { $multiply: ['$product_cost', { $divide: [markup, 100] }] },
-          updated_at: new Date()
-        }
-      }
-    );
-    return result.modifiedCount >= 0;
+/**
+ * MongoDB Recalculation Repository implementing IRecalculationRepository interface
+ * Extends BaseRepository for common operations
+ */
+class MongoRecalculationRepository extends BaseRepository {
+  /**
+   * @param {Db} db - MongoDB database instance
+   */
+  constructor(db) {
+    super(db);
+    this.collectionName = COLLECTION_PRODUCTS;
   }
 
-  async deleteAll(userId: string): Promise<boolean> {
-    const products = this.db.collection('products');
-    const supplies = this.db.collection('supplies');
-    const recipes = this.db.collection('recipes');
-    const recipeProducts = this.db.collection('recipe_products');
+  /**
+   * Execute recalculation for all products of a user using aggregation pipeline
+   * @param {number} tax - Tax percentage
+   * @param {number} markup - Markup percentage
+   * @param {string} userId - User ID
+   * @returns {Promise<boolean>}
+   */
+  async executeRecalculate(tax, markup, userId) {
+    const pipeline = [
+      { $match: { userid: userId } },
+      {
+        $set: {
+          total_extras: {
+            $sum: {
+              $map: {
+                input: '$supplies',
+                as: 's',
+                in: {
+                  $let: {
+                    vars: {
+                      baseCost: { $multiply: ['$$s.value', { $divide: ['$$s.qtvalue', '$$s.qt'] }] }
+                    },
+                    in: {
+                      $cond: [
+                        { $eq: ['$$s.unit', 'KG'] },
+                        { $divide: ['$$baseCost', 1000] },
+                        '$$baseCost'
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          total_fichas: {
+            $sum: {
+              $map: {
+                input: '$recipes',
+                as: 'r',
+                in: {
+                  $multiply: [
+                    { $divide: ['$$r.total', '$$r.yieldvalue'] },
+                    '$$r.quantity'
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        $set: {
+          product_cost: { $add: ['$total_extras', '$total_fichas'] },
+          product_cost_with_tax: {
+            $add: ['$product_cost', { $multiply: ['$product_cost', { $divide: [tax, 100] }] }]
+          },
+          product_cost_with_markup: {
+            $add: ['$product_cost', { $multiply: ['$product_cost', { $divide: [markup, 100] }] }]
+          },
+          product_cost_with_markup_tax: {
+            $add: [
+              '$product_cost_with_markup',
+              { $multiply: ['$product_cost_with_markup', { $divide: [tax, 100] }] }
+            ]
+          },
+          updated_at: new Date()
+        }
+      },
+      { $merge: { into: COLLECTION_PRODUCTS, on: '_id', whenMatched: 'merge' } }
+    ];
 
-    const productIds = await products.find({ userid: userId }).project({ _id: 1 }).toArray();
+    await this.collection.aggregate(pipeline).toArray();
+    return true;
+  }
+
+  /**
+   * Delete all data for a user (products, supplies, recipes, recipe products)
+   * @param {string} userId - User ID
+   * @returns {Promise<boolean>}
+   */
+  async deleteAll(userId) {
+    const productIds = await this.findAll({ userid: userId }, { projection: { _id: 1 } });
     const productIdStrings = productIds.map(p => p._id.toString());
 
     await Promise.all([
-      supplies.deleteMany({ product_id: { $in: productIdStrings } }),
-      recipeProducts.deleteMany({ product_id: { $in: productIdStrings } }), // assuming we add product_id to recipe_products
-      recipes.deleteMany({ product_id: { $in: productIdStrings } }),
-      products.deleteMany({ userid: userId })
+      this.db.collection(COLLECTION_SUPPLIES).deleteMany({ product_id: { $in: productIdStrings } }),
+      this.db.collection(COLLECTION_RECIPE_PRODUCTS).deleteMany({ product_id: { $in: productIdStrings } }),
+      this.db.collection(COLLECTION_RECIPES).deleteMany({ product_id: { $in: productIdStrings } }),
+      this.deleteMany({ userid: userId })
     ]);
 
     return true;
   }
 }
+
+module.exports = {
+  MongoRecalculationRepository
+};

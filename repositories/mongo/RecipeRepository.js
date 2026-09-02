@@ -1,45 +1,57 @@
-import { Db, Collection, ObjectId } from 'mongodb';
-import { IRecipeRepository, Recipe, CreateRecipeDTO, CreateRecipeProductDTO } from '../interfaces/index.js';
+const { Db, Collection, ObjectId } = require('mongodb');
+const { BaseRepository, PaginatedRepository } = require('./BaseRepository.js');
 
 const COLLECTION_RECIPES = 'recipes';
 const COLLECTION_RECIPE_PRODUCTS = 'recipe_products';
 const COLLECTION_PRODUCTS = 'products';
 
-export class MongoRecipeRepository implements IRecipeRepository {
-  constructor(private db: Db) {}
-
-  private get recipes(): Collection {
-    return this.db.collection(COLLECTION_RECIPES);
+/**
+ * MongoDB Recipe Repository implementing IRecipeRepository interface
+ * Extends BaseRepository for common CRUD operations
+ */
+class MongoRecipeRepository extends BaseRepository {
+  /**
+   * @param {Db} db - MongoDB database instance
+   */
+  constructor(db) {
+    super(db);
+    this.collectionName = COLLECTION_RECIPES;
   }
 
-  private get recipeProducts(): Collection {
-    return this.db.collection(COLLECTION_RECIPE_PRODUCTS);
-  }
-
-  private get products(): Collection {
-    return this.db.collection(COLLECTION_PRODUCTS);
-  }
-
-  async findByRemoteId(recipeId: string, userId: string): Promise<Recipe[]> {
-    const productIds = await this.products.find({ userid: userId }).project({ _id: 1 }).toArray();
+  /**
+   * Find recipes by identity ID and user
+   * @param {string} recipeId - Recipe identity ID
+   * @param {string} userId - User ID
+   * @returns {Promise<Array>}
+   */
+  async findByRemoteId(recipeId, userId) {
+    const productIds = await this.db.collection(COLLECTION_PRODUCTS).find({ userid: userId }).project({ _id: 1 }).toArray();
     const productIdStrings = productIds.map(p => p._id.toString());
 
-    const recipes = await this.recipes.find({
+    const recipes = await this.findAll({
       recipe_identity_id: recipeId,
       product_id: { $in: productIdStrings }
-    }).toArray() as Promise<Recipe[]>;
+    });
 
     const recipesWithProducts = await Promise.all(
       recipes.map(async (recipe) => {
-        const products = await this.recipeProducts.find({ products_recipes_id: recipe._id.toString() }).toArray() as Promise<RecipeProduct[]>;
-        return { ...recipe, _id: recipe.recipe_identity_id, products };
+        const products = await this.db.collection(COLLECTION_RECIPE_PRODUCTS).find({
+          products_recipes_id: recipe._id.toString()
+        }).toArray();
+        return { ...this.mapToRecipe(recipe), products: products.map(this.mapToRecipeProduct) };
       })
     );
 
     return recipesWithProducts;
   }
 
-  async create(productId: string, recipes: CreateRecipeDTO[]): Promise<boolean> {
+  /**
+   * Create recipes for a product
+   * @param {string} productId - Product ID
+   * @param {Array} recipes - Array of recipe data
+   * @returns {Promise<boolean>} Whether all recipes were created
+   */
+  async create(productId, recipes) {
     for (const recipe of recipes) {
       const recipeDoc = {
         recipe_name: recipe.name,
@@ -51,8 +63,9 @@ export class MongoRecipeRepository implements IRecipeRepository {
         recipe_identity_id: recipe.id,
         quantity: recipe.quantity
       };
-      const recipeResult = await this.recipes.insertOne(recipeDoc);
-      const recipeDbId = recipeResult.insertedId.toString();
+
+      const recipeResult = await this.create(recipeDoc);
+      const recipeDbId = recipeResult;
 
       if (recipe.products && recipe.products.length > 0) {
         const productDocs = recipe.products.map(product => ({
@@ -65,51 +78,153 @@ export class MongoRecipeRepository implements IRecipeRepository {
           products_recipes_id: recipeDbId,
           recipes_products_identity_id: product.id
         }));
-        await this.recipeProducts.insertMany(productDocs);
+        await this.db.collection(COLLECTION_RECIPE_PRODUCTS).insertMany(productDocs);
       }
     }
     return true;
   }
 
-  async deleteByProductId(productId: string): Promise<boolean> {
-    const recipes = await this.recipes.find({ product_id: productId }).project({ _id: 1 }).toArray();
+  /**
+   * Delete all recipes for a product
+   * @param {string} productId - Product ID
+   * @returns {Promise<boolean>}
+   */
+  async deleteByProductId(productId) {
+    const recipes = await this.findAll({ product_id: productId }, { projection: { _id: 1 } });
     const recipeIds = recipes.map(r => r._id.toString());
 
-    await this.recipeProducts.deleteMany({ products_recipes_id: { $in: recipeIds } });
-    const result = await this.recipes.deleteMany({ product_id: productId });
-    return result.deletedCount >= 0;
+    await this.db.collection(COLLECTION_RECIPE_PRODUCTS).deleteMany({ products_recipes_id: { $in: recipeIds } });
+    const count = await this.deleteMany({ product_id: productId });
+    return count >= 0;
   }
 
-  async deleteByRemoteId(recipeId: string, userId: string): Promise<boolean> {
-    const productIds = await this.products.find({ userid: userId }).project({ _id: 1 }).toArray();
+  /**
+   * Delete recipe by identity ID and user
+   * @param {string} recipeId - Recipe identity ID
+   * @param {string} userId - User ID
+   * @returns {Promise<boolean>} Whether recipe was deleted
+   */
+  async deleteByRemoteId(recipeId, userId) {
+    const productIds = await this.db.collection(COLLECTION_PRODUCTS).find({ userid: userId }).project({ _id: 1 }).toArray();
     const productIdStrings = productIds.map(p => p._id.toString());
 
-    const recipes = await this.recipes.find({
+    const recipes = await this.findAll({
       recipe_identity_id: recipeId,
       product_id: { $in: productIdStrings }
-    }).project({ _id: 1 }).toArray();
+    }, { projection: { _id: 1 } });
     const recipeIds = recipes.map(r => r._id.toString());
 
-    await this.recipeProducts.deleteMany({ products_recipes_id: { $in: recipeIds } });
-    const result = await this.recipes.deleteMany({
+    await this.db.collection(COLLECTION_RECIPE_PRODUCTS).deleteMany({ products_recipes_id: { $in: recipeIds } });
+    const count = await this.deleteMany({
       recipe_identity_id: recipeId,
       product_id: { $in: productIdStrings }
     });
-    return result.deletedCount > 0;
+    return count > 0;
   }
 
-  async deleteById(id: string, userId: string): Promise<boolean> {
-    const productIds = await this.products.find({ userid: userId }).project({ _id: 1 }).toArray();
+  /**
+   * Delete recipe by ID and user
+   * @param {string} id - Recipe ID
+   * @param {string} userId - User ID
+   * @returns {Promise<boolean>} Whether recipe was deleted
+   */
+  async deleteById(id, userId) {
+    if (!ObjectId.isValid(id)) return false;
+
+    const productIds = await this.db.collection(COLLECTION_PRODUCTS).find({ userid: userId }).project({ _id: 1 }).toArray();
     const productIdStrings = productIds.map(p => p._id.toString());
 
-    const recipe = await this.recipes.findOne({
+    const recipe = await this.findOne({
       _id: new ObjectId(id),
       product_id: { $in: productIdStrings }
     });
+
     if (!recipe) return false;
 
-    await this.recipeProducts.deleteMany({ products_recipes_id: recipe._id.toString() });
-    const result = await this.recipes.deleteOne({ _id: new ObjectId(id) });
-    return result.deletedCount > 0;
+    await this.db.collection(COLLECTION_RECIPE_PRODUCTS).deleteMany({ products_recipes_id: recipe._id.toString() });
+    const result = await this.deleteById(id);
+    return result;
+  }
+
+  /**
+   * Find recipes with pagination
+   * @param {Object} filter - MongoDB filter
+   * @param {Object} options - Pagination options
+   * @returns {Promise<Object>}
+   */
+  async findPaginated(filter, options = {}) {
+    const page = options.page ?? 1;
+    const limit = options.limit ?? 20;
+    const sort = options.sort ?? { _id: -1 };
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.collection.find(filter, { sort, skip, limit }).toArray(),
+      this.collection.countDocuments(filter)
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
+  }
+
+  /**
+   * Map recipe document to interface format
+   * @param {Object} doc - Recipe document
+   * @returns {Object}
+   */
+  mapToRecipe(doc) {
+    return {
+      id: doc._id.toString(),
+      _id: doc.recipe_identity_id,
+      name: doc.recipe_name,
+      quantity: doc.quantity,
+      total: doc.total,
+      totalWithTax: doc.totalwithtax,
+      yieldValue: doc.yieldvalue,
+      yieldValueUnit: doc.yieldvalueunit,
+      products: []
+    };
+  }
+
+  /**
+   * Map recipe product document to interface format
+   * @param {Object} doc - Recipe product document
+   * @returns {Object}
+   */
+  mapToRecipeProduct(doc) {
+    return {
+      id: doc._id.toString(),
+      _id: doc.recipes_products_identity_id,
+      name: doc.recipe_product_name,
+      value: doc.value,
+      status: doc.status,
+      qt: doc.qt,
+      qtValue: doc.qtValue,
+      unit: doc.unit
+    };
   }
 }
+
+/**
+ * Paginated Recipe Repository
+ * @extends PaginatedRepository
+ */
+class MongoRecipePaginatedRepository extends PaginatedRepository {
+  /**
+   * @param {Db} db - MongoDB database instance
+   */
+  constructor(db) {
+    super(db);
+    this.collectionName = COLLECTION_RECIPES;
+  }
+}
+
+module.exports = {
+  MongoRecipeRepository,
+  MongoRecipePaginatedRepository
+};
