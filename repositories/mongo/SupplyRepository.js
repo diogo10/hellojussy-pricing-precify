@@ -1,25 +1,39 @@
-import { Db, Collection, ObjectId } from 'mongodb';
-import { ISupplyRepository, Supply, CreateSupplyDTO, UpdateSupplyDTO } from '../interfaces/index.js';
+const { Db, Collection, ObjectId } = require('mongodb');
+const { BaseRepository, PaginatedRepository } = require('./BaseRepository.js');
 
 const COLLECTION_SUPPLIES = 'supplies';
 const COLLECTION_PRODUCTS = 'products';
 
-export class MongoSupplyRepository implements ISupplyRepository {
-  constructor(private db: Db) {}
-
-  private get supplies(): Collection {
-    return this.db.collection(COLLECTION_SUPPLIES);
+/**
+ * MongoDB Supply Repository implementing ISupplyRepository interface
+ * Extends BaseRepository for common CRUD operations
+ */
+class MongoSupplyRepository extends BaseRepository {
+  /**
+   * @param {Db} db - MongoDB database instance
+   */
+  constructor(db) {
+    super(db);
+    this.collectionName = COLLECTION_SUPPLIES;
   }
 
-  private get products(): Collection {
-    return this.db.collection(COLLECTION_PRODUCTS);
+  /**
+   * Find supplies by product ID
+   * @param {string} productId - Product ID
+   * @returns {Promise<Array>}
+   */
+  async findByProductId(productId) {
+    const docs = await this.findAll({ product_id: productId });
+    return docs.map(this.mapToSupply);
   }
 
-  async findByProductId(productId: string): Promise<Supply[]> {
-    return this.supplies.find({ product_id: productId }).toArray() as Promise<Supply[]>;
-  }
-
-  async create(productId: string, supplies: CreateSupplyDTO[]): Promise<boolean> {
+  /**
+   * Create supplies for a product
+   * @param {string} productId - Product ID
+   * @param {Array} supplies - Array of supply data
+   * @returns {Promise<boolean>} Whether all supplies were created
+   */
+  async create(productId, supplies) {
     const docs = supplies.map(supply => ({
       supply_name: supply.name,
       value: supply.value,
@@ -29,44 +43,122 @@ export class MongoSupplyRepository implements ISupplyRepository {
       product_id: productId,
       supply_identity_id: supply.id
     }));
-    const result = await this.supplies.insertMany(docs);
-    return result.insertedCount === supplies.length;
+    const ids = await this.createMany(docs);
+    return ids.length === supplies.length;
   }
 
-  async update(supplyId: string, userId: string, data: UpdateSupplyDTO): Promise<boolean> {
-    const productIds = await this.products.find({ userid: userId }).project({ _id: 1 }).toArray();
+  /**
+   * Update supply by identity ID and user
+   * @param {string} supplyId - Supply identity ID
+   * @param {string} userId - User ID
+   * @param {Object} data - Updated supply data
+   * @returns {Promise<boolean>} Whether supply was modified
+   */
+  async update(supplyId, userId, data) {
+    const productIds = await this.db.collection(COLLECTION_PRODUCTS).find({ userid: userId }).project({ _id: 1 }).toArray();
     const productIdStrings = productIds.map(p => p._id.toString());
 
-    const result = await this.supplies.updateOne(
-      { 
+    const result = await this.updateOne(
+      {
         supply_identity_id: supplyId,
         product_id: { $in: productIdStrings }
       },
-      { 
-        $set: {
-          supply_name: data.name,
-          qt: data.qt,
-          qtvalue: data.qtValue,
-          unit: data.unit
-        }
+      {
+        supply_name: data.name,
+        qt: data.qt,
+        qtvalue: data.qtValue,
+        unit: data.unit
       }
     );
-    return result.modifiedCount > 0;
+    return result;
   }
 
-  async deleteByProductId(productId: string): Promise<boolean> {
-    const result = await this.supplies.deleteMany({ product_id: productId });
-    return result.deletedCount >= 0;
+  /**
+   * Delete all supplies for a product
+   * @param {string} productId - Product ID
+   * @returns {Promise<boolean>}
+   */
+  async deleteByProductId(productId) {
+    const count = await this.deleteMany({ product_id: productId });
+    return count >= 0;
   }
 
-  async deleteByRemoteId(supplyId: string, userId: string): Promise<boolean> {
-    const productIds = await this.products.find({ userid: userId }).project({ _id: 1 }).toArray();
+  /**
+   * Delete supply by identity ID and user
+   * @param {string} supplyId - Supply identity ID
+   * @param {string} userId - User ID
+   * @returns {Promise<boolean>} Whether supply was deleted
+   */
+  async deleteByRemoteId(supplyId, userId) {
+    const productIds = await this.db.collection(COLLECTION_PRODUCTS).find({ userid: userId }).project({ _id: 1 }).toArray();
     const productIdStrings = productIds.map(p => p._id.toString());
 
-    const result = await this.supplies.deleteOne({
+    const result = await this.deleteOne({
       supply_identity_id: supplyId,
       product_id: { $in: productIdStrings }
     });
-    return result.deletedCount > 0;
+    return result;
+  }
+
+  /**
+   * Find supplies with pagination
+   * @param {Object} filter - MongoDB filter
+   * @param {Object} options - Pagination options
+   * @returns {Promise<Object>}
+   */
+  async findPaginated(filter, options = {}) {
+    const page = options.page ?? 1;
+    const limit = options.limit ?? 20;
+    const sort = options.sort ?? { _id: -1 };
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.collection.find(filter, { sort, skip, limit }).toArray(),
+      this.collection.countDocuments(filter)
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    };
+  }
+
+  /**
+   * Map supply document to interface format
+   * @param {Object} doc - Supply document
+   * @returns {Object}
+   */
+  mapToSupply(doc) {
+    return {
+      id: doc._id.toString(),
+      _id: doc.supply_identity_id,
+      name: doc.supply_name,
+      value: doc.value,
+      qt: doc.qt,
+      qtValue: doc.qtvalue,
+      unit: doc.unit
+    };
   }
 }
+
+/**
+ * Paginated Supply Repository
+ * @extends PaginatedRepository
+ */
+class MongoSupplyPaginatedRepository extends PaginatedRepository {
+  /**
+   * @param {Db} db - MongoDB database instance
+   */
+  constructor(db) {
+    super(db);
+    this.collectionName = COLLECTION_SUPPLIES;
+  }
+}
+
+module.exports = {
+  MongoSupplyRepository,
+  MongoSupplyPaginatedRepository
+};
