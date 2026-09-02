@@ -12,15 +12,6 @@ if [ -f ".env" ]; then
   set +a
 fi
 
-
-INSTRUCTIONS_FILE="instructions.md"
-if [ -f "$INSTRUCTIONS_FILE" ]; then
- opencode run --title "instruction" "Read the instructions in the instructions.md file if you have problems with this project" --file $INSTRUCTIONS_FILE
-else
-  echo "Skipping instruction run; missing instructions file: $INSTRUCTIONS_FILE"
-fi
-
-
 REPO_URL="https://github.com/$(git remote get-url origin | sed 's/.*github.com[:/]\(.*\)\.git/\1/' | sed 's/.*github.com[:/]\(.*\)/\1/')"
 BRANCH_NAME="$(git rev-parse --abbrev-ref HEAD)"
 BRANCH_NAME_ESCAPED=$(printf '%s' "$BRANCH_NAME" | sed 's/\//%2F/g')
