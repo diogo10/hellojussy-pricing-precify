@@ -4,7 +4,6 @@ const { BaseRepository } = require('./BaseRepository.js');
 const COLLECTION_PRODUCTS = 'products';
 const COLLECTION_SUPPLIES = 'supplies';
 const COLLECTION_RECIPES = 'recipes';
-const COLLECTION_RECIPE_PRODUCTS = 'recipe_products';
 
 /**
  * MongoDB Recalculation Repository implementing IRecalculationRepository interface
@@ -95,7 +94,8 @@ class MongoRecalculationRepository extends BaseRepository {
   }
 
   /**
-   * Delete all data for a user (products, supplies, recipes, recipe products)
+   * Delete all data for a user (products, supplies, recipes)
+   * Recipe products are embedded within recipes, so only recipes collection needs cleanup
    * @param {string} userId - User ID
    * @returns {Promise<boolean>}
    */
@@ -105,7 +105,6 @@ class MongoRecalculationRepository extends BaseRepository {
 
     await Promise.all([
       this.db.collection(COLLECTION_SUPPLIES).deleteMany({ product_id: { $in: productIdStrings } }),
-      this.db.collection(COLLECTION_RECIPE_PRODUCTS).deleteMany({ product_id: { $in: productIdStrings } }),
       this.db.collection(COLLECTION_RECIPES).deleteMany({ product_id: { $in: productIdStrings } }),
       this.deleteMany({ userid: userId })
     ]);
