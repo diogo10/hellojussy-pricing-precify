@@ -27,4 +27,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Merge eligible pull requests
-        uses: lirantal/automerge@v1
+        uses: lirantal/github-action-automerge@1.0.1
