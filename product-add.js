@@ -1,35 +1,37 @@
-const text = 'INSERT INTO products' +
-'(product_name, userid, profit_percentage, price,' +
-'product_cost, product_cost_with_tax, product_cost_with_markup, product_cost_with_markup_tax, total_fichas, total_extras) ' +
-'VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id';
+/**
+ * MongoDB Product Add Module
+ * Uses MongoProductRepository to create product with embedded supplies and recipes atomically
+ */
 
-async function queryAddProduct(pool, body) {
+async function queryAddProduct(productRepository, body) {
+  const { name, userId, prof, price, cost, costWithTax, totalFichas,
+    totalExtras, costWithMarkup, costWithMarkupTax, supplies, recipes } = body;
 
-    const { name, userId, prof, price, cost, costWithTax, totalFichas,
-        totalExtras, costWithMarkup, costWithMarkupTax } = body;
+  const data = {
+    name,
+    userId,
+    prof,
+    price,
+    cost,
+    costWithTax,
+    costWithMarkup,
+    costWithMarkupTax,
+    totalFichas,
+    totalExtras,
+    supplies: supplies ?? [],
+    recipes: recipes ?? []
+  };
 
-    const values = [name, userId, prof, price, cost, costWithTax, 
-        costWithMarkup, costWithMarkupTax, totalFichas, totalExtras];
-
-    const resultToReturn = await executeQuery(pool, values);
-
-    console.log("queryAddProduct: " + resultToReturn);
-    return resultToReturn;
-}
-
-
-async function executeQuery(pool, values) {
-    try {
-        const response = await pool.query(text, values);
-        const resultId = response.rows[0].id;
-        console.log("add product id: " + resultId);
-        return resultId;
-    } catch (err) {
-        console.log(err.stack)
-        return null;
-    }
+  try {
+    const productId = await productRepository.create(data);
+    console.log("productAdd: Created product with ID: " + productId);
+    return productId;
+  } catch (err) {
+    console.log("productAdd error: " + err.stack);
+    return null;
+  }
 }
 
 module.exports = {
-    queryAddProduct
-}
+  queryAddProduct
+};
