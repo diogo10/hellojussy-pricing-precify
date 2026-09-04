@@ -1,20 +1,53 @@
-const queries = require("./recipes_queries");
+const { MongoClient } = require('mongodb');
+const { MongoEmbeddedRecipeRepository } = require('./repositories/mongo/RecipeRepository.js');
 
-async function queryGetRecipes(pool, recipeId ,userId) {
-    const list = await executeQuery(pool, [recipeId, userId]);
-    return list;
+let mongoClient = null;
+let recipeRepository = null;
+
+/**
+ * Initialize MongoDB connection and recipe repository
+ * @returns {Promise<MongoEmbeddedRecipeRepository>}
+ */
+async function getRecipeRepository() {
+  if (recipeRepository) return recipeRepository;
+
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pricing_precify';
+
+  if (!mongoClient) {
+    mongoClient = new MongoClient(uri);
+    await mongoClient.connect();
+  }
+
+  const db = mongoClient.db();
+  recipeRepository = new MongoEmbeddedRecipeRepository(db);
+  return recipeRepository;
 }
 
-async function executeQuery(pool, values) {
-    try {
-        const response = await pool.query(queries.SELECT_WITH_USER, values);
-        return response.rows;
-    } catch (err) {
-        console.log(err.stack)
-        return [];
-    }
+/**
+ * Close MongoDB connection
+ * @returns {Promise<void>}
+ */
+async function closeConnection() {
+  if (mongoClient) {
+    await mongoClient.close();
+    mongoClient = null;
+    recipeRepository = null;
+  }
+}
+
+/**
+ * Get recipes by remote ID and user ID
+ * @param {string} recipeId - Recipe identity ID
+ * @param {string} userId - User ID
+ * @returns {Promise<Array>} Array of recipes with products
+ */
+async function queryGetRecipes(recipeId, userId) {
+  const repo = await getRecipeRepository();
+  return repo.findByRemoteId(recipeId, userId);
 }
 
 module.exports = {
-    queryGetRecipes
-}
+  queryGetRecipes,
+  getRecipeRepository,
+  closeConnection
+};
