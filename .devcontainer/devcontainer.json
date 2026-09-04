@@ -15,5 +15,6 @@
       ]
     }
   },
+  "postCreateCommand": "/usr/local/bin/start-mongodb.sh",
   "postStartCommand": "git config --global --add safe.directory \"${containerWorkspaceFolder}\" && git pull && ./.devcontainer/bakehub-setup.sh de1a0447-da26-41e3-868c-83d8d57c75bc"
 }

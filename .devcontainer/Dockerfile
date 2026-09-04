@@ -1,7 +1,7 @@
 FROM node:24-slim
 
 RUN apt-get update
-RUN apt-get install -y curl git unzip xz-utils zip libglu1-mesa python3 python3-pip gh jq gnupg
+RUN apt-get install -y curl git unzip xz-utils zip libglu1-mesa python3 python3-pip gh jq gnupg netcat-openbsd
 RUN apt-get clean
 
 # Install MongoDB
@@ -11,5 +11,12 @@ RUN curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg -o /usr/s
     apt-get install -y mongodb-org && \
     apt-get clean
 
+# Create MongoDB data directory
+RUN mkdir -p /data/db && chown -R mongodb:mongodb /data/db
+
 # Install opencode
 RUN curl -fsSL https://opencode.ai/install | bash
+
+# Add startup script to run MongoDB
+COPY start-mongodb.sh /usr/local/bin/start-mongodb.sh
+RUN chmod +x /usr/local/bin/start-mongodb.sh
