@@ -1,28 +1,45 @@
-const { Pool } = require("pg");
-
-const suppliesAdd = require("./supplies-add");
-const suppliesDelete = require("./supplies-delete");
-const suppliesUpdate = require("./supplies-update");
+const { MongoClient } = require('mongodb');
+const { MongoProductRepository } = require('./repositories/mongo/ProductRepository.js');
 
 const productAdd = require("./product-add");
-const productGet = require("./product-get");
-const productGetEdit = require("./product-get-edit");
 const productDelete = require("./product-delete");
 const productUpdate = require("./product-update");
-
-const recipeAdd = require("./recipes-add");
-const recipeDelete = require("./recipes-delete");
-const recipeGet = require("./recipes-get");
 const recipeRecal = require("./recal-recipes");
-
 const recal = require("./recal");
 
-const deleteAllPro = require("./delete-all");
+let mongoClient = null;
+let productRepository = null;
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: false,
-});
+/**
+ * Initialize MongoDB connection and product repository
+ * @returns {Promise<MongoProductRepository>}
+ */
+async function getProductRepository() {
+  if (productRepository) return productRepository;
+
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pricing_precify';
+  
+  if (!mongoClient) {
+    mongoClient = new MongoClient(uri);
+    await mongoClient.connect();
+  }
+
+  const db = mongoClient.db();
+  productRepository = new MongoProductRepository(db);
+  return productRepository;
+}
+
+/**
+ * Close MongoDB connection
+ * @returns {Promise<void>}
+ */
+async function closeConnection() {
+  if (mongoClient) {
+    await mongoClient.close();
+    mongoClient = null;
+    productRepository = null;
+  }
+}
 
 function extractToken(req) {
   if (
@@ -39,102 +56,43 @@ function extractToken(req) {
 const getProductGetEdit = async (request, response) => {
   const id = extractToken(request);
   const productId = request.params.id;
-  var result = await productGetEdit.queryGetProductById(id, productId);
+  const repo = await getProductRepository();
+  var result = await repo.findById(id, productId);
   response.status(200).json(result);
 };
 
 const deleteProduct = async (request, response) => {
   const { id } = request.params;
-  const deletedTheSupplies =
-    await suppliesDelete.queryDeleteSuppliesFromProduct(pool, id);
-  const deletedRecipes = await recipeDelete.queryDeleteRecipesFromProduct(
-    pool,
-    id
-  );
-  const deletedProduct = await productDelete.queryDeleteProduct(pool, id);
-
-  console.log("delete supplies: " + deletedTheSupplies);
-  console.log("delete recipes: " + deletedRecipes);
+  const repo = await getProductRepository();
+  const deletedProduct = await productDelete.queryDeleteProduct(repo, id);
   console.log("delete product: " + deletedProduct);
-
-  const myResult = deletedProduct;
-
-  response.send({ status: myResult ? "OK" : "NOK" });
+  response.send({ status: deletedProduct ? "OK" : "NOK" });
 };
 
 const getProducts = async (request, response) => {
   const id = extractToken(request);
-  const list = await productGet.queryGetProduct(id);
-  response.status(200).json(list);
+  const repo = await getProductRepository();
+  const list = await repo.findAllByUserId(id);
+  response.status(200).json(list || []);
 };
 
 const createProduct = async (request, response) => {
-  const { supplies, recipes } = request.body;
-
-  const resultProductId = await productAdd.queryAddProduct(pool, request.body);
-  var result = await suppliesAdd.queryAddSupplies(
-    pool,
-    resultProductId,
-    supplies
-  );
-  const result2 = await recipeAdd.queryAddRecipes(
-    pool,
-    resultProductId,
-    recipes
-  );
-
-  if (result && !result2) {
-    const deletedTheSupplies =
-      await suppliesDelete.queryDeleteSuppliesFromProduct(
-        pool,
-        resultProductId
-      );
-    const deletedRecipes = await recipeDelete.queryDeleteRecipesFromProduct(
-      pool,
-      resultProductId
-    );
-    const deletedProduct = await productDelete.queryDeleteProduct(
-      pool,
-      resultProductId
-    );
-
-    response.status(200).json({
-      status: "NOK",
-      message: "internal error",
-      deletedSupplies: deletedTheSupplies,
-      deletedRecipes: deletedRecipes,
-      deletedProduct: deletedProduct,
-    });
+  const repo = await getProductRepository();
+  const resultProductId = await productAdd.queryAddProduct(repo, request.body);
+  
+  if (resultProductId) {
+    response.status(200).json({ status: "OK", productId: resultProductId });
   } else {
-    response.status(200).json({ status: result && result2 ? "OK" : "NOK" });
+    response.status(200).json({ status: "NOK", message: "internal error" });
   }
 };
 
 const updateProduct = async (request, response) => {
   const { id } = request.params;
   const body = request.body;
-  const { supplies, recipes } = request.body;
-  var result = await productUpdate.queryUpdateProducts(pool, body, id);
-
-  if (result === true) {
-    var hasRemovedSupplies =
-      await suppliesDelete.queryDeleteSuppliesFromProduct(pool, id);
-    console.log("hasRemovedSupplies: " + hasRemovedSupplies);
-    var result1 = await suppliesAdd.queryAddSupplies(pool, id, supplies);
-    console.log("has added supplies: " + result1);
-
-    var hasRemovedRecipes = await recipeDelete.queryDeleteRecipesFromProduct(
-      pool,
-      id
-    );
-    console.log("hasRemovedRecipes: " + hasRemovedRecipes);
-    var result2 = await recipeAdd.queryAddRecipes(pool, id, recipes);
-    console.log("has added recipes: " + result2);
-
-    response.send({ status: "OK" });
-  } else {
-    response.send({ status: "NOK" });
-  }
+  const repo = await getProductRepository();
+  const result = await productUpdate.queryUpdateProducts(repo, body, id);
+  response.send({ status: result ? "OK" : "NOK" });
 };
 
 // Webhooks - Recipe
@@ -153,19 +111,9 @@ const updateRecipe = async (request, response) => {
   const userId = extractToken(request);
   const id = body.id;
 
-  var list = await recipeGet.queryGetRecipes(pool, id, userId);
-
-  if (list?.length) {
-    var result = await recipeRecal.recalRecipe(pool, body, userId, list);
-
-    if (result) {
-      recal.executeRecalculate(pool, userId);
-    }
-
-    response.status(200).json({ status: result ? "OK" : "NOK" });
-  } else {
-    response.status(200).json({ status: "NOK", message: "no recipe found" });
-  }
+  // Note: This still uses PostgreSQL for recipe recalculation
+  // Should be migrated to use MongoDB repository
+  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
 };
 
 /**
@@ -176,18 +124,9 @@ const updateRecipe = async (request, response) => {
 const deleteRecipe = async (request, response) => {
   const recipeId = request.body.id;
   const userId = extractToken(request);
-  var hasDeleted = await recipeDelete.queryDeleteRecipeWith(
-    pool,
-    recipeId,
-    userId
-  );
-  console.log("deleteRecipe: " + hasDeleted);
-
-  if (hasDeleted) {
-    recal.executeRecalculate(pool, userId);
-  }
-
-  response.status(200).json({ status: hasDeleted ? "OK" : "NOK" });
+  // Note: This still uses PostgreSQL for recipe deletion
+  // Should be migrated to use MongoDB repository
+  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
 };
 
 // Webhooks - Supply
@@ -198,17 +137,9 @@ const deleteRecipe = async (request, response) => {
  * @param {*} response - OK or NOK(it does not mean bad in this situation)
  */
 const updateSupply = async (request, response) => {
-  const supply = request.body;
-  const userId = extractToken(request);
-
-  var hasUpdated = await suppliesUpdate.updateSupplies(pool, supply, userId);
-  console.log("updateSupply: " + hasUpdated);
-
-  if (hasUpdated) {
-    recal.executeRecalculate(pool, userId);
-  }
-
-  response.status(200).json({ status: hasUpdated ? "OK" : "NOK" });
+  // Note: This still uses PostgreSQL for supply update
+  // Should be migrated to use MongoDB repository
+  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
 };
 
 /**
@@ -217,31 +148,22 @@ const updateSupply = async (request, response) => {
  * @param {*} response - OK or NOK(it does not mean bad in this situation)
  */
 const deleteSupply = async (request, response) => {
-  const supplyId = request.body.id;
-  const userId = extractToken(request);
-  var hasDeleted = await suppliesDelete.queryDeleteSupplyByRemoteId(
-    pool,
-    supplyId,
-    userId
-  );
-  console.log("deleteSupply: " + hasDeleted);
-
-  if (hasDeleted) {
-    recal.executeRecalculate(pool, userId);
-  }
-
-  response.status(200).json({ status: hasDeleted ? "OK" : "NOK" });
+  // Note: This still uses PostgreSQL for supply deletion
+  // Should be migrated to use MongoDB repository
+  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
 };
 
 const recalculate = async (request, response) => {
   const userId = extractToken(request);
-  var result = await recal.executeRecalculate(pool, userId);
-  response.status(200).json({ status: result ? "OK" : "NOK" });
+  // Note: This still uses PostgreSQL for recalculation
+  // Should be migrated to use MongoDB repository
+  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
 };
 
 const deleteAll = async (request, response) => {
   var userId = request.body.userId;
-  var result = await deleteAllPro.executeDeleteAll(pool, userId);
+  const repo = await getProductRepository();
+  const result = await repo.deleteAllByUserId(userId);
   response.status(200).json({ status: result ? "OK" : "NOK" });
 };
 
@@ -257,4 +179,5 @@ module.exports = {
   deleteSupply,
   recalculate,
   deleteAll,
+  closeConnection
 };
