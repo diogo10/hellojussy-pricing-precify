@@ -192,10 +192,11 @@ class MongoEmbeddedRecipeRepository extends EmbeddedRepository {
    * @param {Db} db - MongoDB database instance
    */
   constructor(db) {
-    super(db);
-    this.collectionName = COLLECTION_PRODUCTS;
-    this.parentIdField = '_id';
-    this.childrenField = 'recipes';
+    super(db, {
+      collectionName: COLLECTION_PRODUCTS,
+      parentIdField: '_id',
+      childrenField: 'recipes'
+    });
   }
 
   /**
@@ -383,10 +384,11 @@ class MongoRecipePaginatedRepository extends EmbeddedRepository {
    * @param {Db} db - MongoDB database instance
    */
   constructor(db) {
-    super(db);
-    this.collectionName = COLLECTION_PRODUCTS;
-    this.parentIdField = '_id';
-    this.childrenField = 'recipes';
+    super(db, {
+      collectionName: COLLECTION_PRODUCTS,
+      parentIdField: '_id',
+      childrenField: 'recipes'
+    });
   }
 }
 

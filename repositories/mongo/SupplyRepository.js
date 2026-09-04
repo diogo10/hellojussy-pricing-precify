@@ -155,10 +155,11 @@ class MongoEmbeddedSupplyRepository extends EmbeddedRepository {
    * @param {Db} db - MongoDB database instance
    */
   constructor(db) {
-    super(db);
-    this.collectionName = COLLECTION_PRODUCTS;
-    this.parentIdField = '_id';
-    this.childrenField = 'supplies';
+    super(db, {
+      collectionName: COLLECTION_PRODUCTS,
+      parentIdField: '_id',
+      childrenField: 'supplies'
+    });
   }
 
   /**
@@ -334,10 +335,11 @@ class MongoEmbeddedSupplyPaginatedRepository extends EmbeddedRepository {
    * @param {Db} db - MongoDB database instance
    */
   constructor(db) {
-    super(db);
-    this.collectionName = COLLECTION_PRODUCTS;
-    this.parentIdField = '_id';
-    this.childrenField = 'supplies';
+    super(db, {
+      collectionName: COLLECTION_PRODUCTS,
+      parentIdField: '_id',
+      childrenField: 'supplies'
+    });
   }
 }
 
