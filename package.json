@@ -16,11 +16,12 @@
     "ejs": "^3.1.5",
     "express": "^4.17.1",
     "mocha": "^10.2.0",
-    "pg": "^8.7.1",
-    "mongodb": "^6.0.0"
+    "mongodb": "^6.0.0",
+    "pg": "^8.7.1"
   },
   "devDependencies": {
     "got": "^11.3.0",
+    "sinon": "^22.1.0",
     "tape": "^4.7.0"
   },
   "repository": {

@@ -39,7 +39,7 @@ function extractToken(req) {
 const getProductGetEdit = async (request, response) => {
   const id = extractToken(request);
   const productId = request.params.id;
-  var result = await productGetEdit.queryGetProductById(pool, id, productId);
+  var result = await productGetEdit.queryGetProductById(id, productId);
   response.status(200).json(result);
 };
 
@@ -64,7 +64,7 @@ const deleteProduct = async (request, response) => {
 
 const getProducts = async (request, response) => {
   const id = extractToken(request);
-  const list = await productGet.queryGetProduct(pool, id);
+  const list = await productGet.queryGetProduct(id);
   response.status(200).json(list);
 };
 

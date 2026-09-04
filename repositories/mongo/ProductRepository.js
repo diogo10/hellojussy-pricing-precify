@@ -13,9 +13,18 @@ class MongoProductRepository extends EmbeddedRepositoryWithPagination {
    */
   constructor(db) {
     super(db);
-    this.collectionName = COLLECTION_PRODUCTS;
-    this.parentIdField = '_id';
-    this.childrenField = 'supplies';
+  }
+
+  get collectionName() {
+    return COLLECTION_PRODUCTS;
+  }
+
+  get parentIdField() {
+    return '_id';
+  }
+
+  get childrenField() {
+    return 'supplies';
   }
 
   /**
