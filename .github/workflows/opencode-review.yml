@@ -1,8 +1,8 @@
 name: opencode-review
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: "0 9 * * 1" # Every Monday at 9am UTC
 
 jobs:
   review:
@@ -24,8 +24,8 @@ jobs:
           model: opencode/nemotron-3-ultra-free
           use_github_token: true
           prompt: |
-            Review this pull request:
-            - Check for code quality issues
+            Review the codebase and look for:
+            - Check for code quality
             - Look for potential bugs
             - Suggest improvements
-            - Apply the suggestion on the same branch and push the changes
+            - Create a pull requests with the code changes suggested. 
