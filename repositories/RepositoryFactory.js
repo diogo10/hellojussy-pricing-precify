@@ -2,7 +2,7 @@ import { Pool } from 'pg';
 import { Db } from 'mongodb';
 import { IProductRepository, ISupplyRepository, IRecipeRepository, IRecalculationRepository } from '../interfaces/index.js';
 import { PostgresProductRepository, PostgresSupplyRepository, PostgresRecipeRepository, PostgresRecalculationRepository } from '../postgres/index.js';
-import { MongoProductRepository, MongoSupplyRepository, MongoRecipeRepository, MongoRecalculationRepository } from '../mongo/index.js';
+import { MongoProductRepository, MongoEmbeddedSupplyRepository, MongoEmbeddedRecipeRepository, MongoRecalculationRepository } from '../mongo/index.js';
 
 export type DatabaseType = 'postgres' | 'mongodb';
 
@@ -94,7 +94,7 @@ export class RepositoryFactory {
         if (!this.config.mongoDb) {
           throw new Error('MongoDB database required for mongodb repository');
         }
-        return new MongoSupplyRepository(this.config.mongoDb);
+        return new MongoEmbeddedSupplyRepository(this.config.mongoDb);
       default:
         throw new Error(`Unsupported database type: ${this.config.type}`);
     }
