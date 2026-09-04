@@ -1,107 +1,73 @@
-const text1 = 'SELECT * FROM products WHERE userid = $1 and id = $2';
-const text2 = 'SELECT id, supply_identity_id as _id, supply_name as name, value, qt, qtvalue, unit FROM products_supplies WHERE product_id = $1';
-const text3 = 'SELECT id, recipe_identity_id as _id, quantity FROM products_recipes WHERE product_id = $1';
+const { MongoClient } = require('mongodb');
+const { MongoProductRepository } = require('./repositories/mongo/ProductRepository.js');
 
-const text4 = 'SELECT id, recipes_products_identity_id as _id, recipe_product_name as name, value, status,' +
-'qt, qtvalue,unit FROM products_recipes_products WHERE products_recipes_id = $1';
+let mongoClient = null;
+let productRepository = null;
 
-async function queryGetProductById(pool, userId, productId) {
-    var supplies = [];
+/**
+ * Initialize MongoDB connection and repository
+ * @param {Object} [options] - Options for testing
+ * @param {MongoProductRepository} [options.repository] - Pre-configured repository for testing
+ * @returns {Promise<MongoProductRepository>}
+ */
+async function getProductRepository(options = {}) {
+  if (options.repository) return options.repository;
+  if (productRepository) return productRepository;
 
-    var result = await executeProductQuery(pool, [userId, productId]);
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pricing_precify';
+  
+  if (!mongoClient) {
+    mongoClient = new MongoClient(uri);
+    await mongoClient.connect();
+  }
 
-    if (result !== null) {
-        supplies = await executeProductSuppliesQuery(pool, [productId]);
-        var recipesDb = await executeProductRecipesQuery(pool, [productId]);
-
-        const pArray = recipesDb.map(async element => {
-            var item = element;
-            var recipesProducts = await executeProductRecipesProductsQuery(pool, [element.id]);
-            item.products = recipesProducts;
-            return item;
-        });
-
-        const productRecipes = await Promise.all(pArray);
-
-        var newResult = result[0];
-        if (newResult === undefined) {
-            return [];
-        }
-        newResult.supplies = supplies;
-        newResult.recipes = productRecipes;
-    
-        return newResult;
-    } else {
-        return [];
-    }
-
-   
+  const db = mongoClient.db();
+  productRepository = new MongoProductRepository(db);
+  return productRepository;
 }
 
-async function newQueryGetProductById(pool, userId, productId) {
-    var result = await executeProductQuery(pool, [userId, productId]);
-    var supplies = [];
-    var recipes = [];
-
-    if (result !== null) {
-        supplies = await executeProductSuppliesQuery(pool, [productId]);
-        var recipesDb = await executeProductRecipesQuery(pool, [productId]);
-
-        recipesDb.forEach(async element => {
-            var recipesProducts = await executeProductRecipesProductsQuery(pool, [element.id]);
-            element.products = recipesProducts;
-            recipes.push(element);
-        });
-    }
-
-    var newResult = result[0];
-    newResult.supplies = supplies;
-    newResult.recipes = recipes;
-
-    return newResult;
+/**
+ * Get product by ID with embedded supplies and recipes
+ * @param {string} userId - User ID
+ * @param {string} productId - Product ID
+ * @param {Object} [options] - Options for testing
+ * @param {MongoProductRepository} [options.repository] - Pre-configured repository for testing
+ * @returns {Promise<Object|null>} Product with details or null
+ */
+async function queryGetProductById(userId, productId, options = {}) {
+  try {
+    const repo = await getProductRepository(options);
+    const product = await repo.findById(userId, productId);
+    return product || null;
+  } catch (err) {
+    console.error('Error fetching product by ID:', err.stack);
+    return null;
+  }
 }
 
-
-async function executeProductQuery(pool, values) {
-    try {
-        const response = await pool.query(text1, values);
-        return response.rows;
-    } catch (err) {
-        console.log(err.stack)
-        return null;
-    }
+/**
+ * Close MongoDB connection (for cleanup)
+ * @returns {Promise<void>}
+ */
+async function closeConnection() {
+  if (mongoClient) {
+    await mongoClient.close();
+    mongoClient = null;
+    productRepository = null;
+  }
 }
 
-async function executeProductSuppliesQuery(pool, values) {
-    try {
-        const response = await pool.query(text2, values);
-        return response.rows;
-    } catch (err) {
-        console.log(err.stack)
-        return [];
-    }
-}
-
-async function executeProductRecipesQuery(pool, values) {
-    try {
-        const response = await pool.query(text3, values);
-        return response.rows;
-    } catch (err) {
-        console.log(err.stack)
-        return [];
-    }
-}
-
-async function executeProductRecipesProductsQuery(pool, values) {
-    try {
-        const response = await pool.query(text4, values);
-        return response.rows;
-    } catch (err) {
-        console.log(err.stack)
-        return [];
-    }
+/**
+ * Reset module state (for testing)
+ */
+function reset() {
+  mongoClient = null;
+  productRepository = null;
 }
 
 module.exports = {
-    queryGetProductById
-}
+  queryGetProductById,
+  closeConnection,
+  reset,
+  getProductRepository
+};
