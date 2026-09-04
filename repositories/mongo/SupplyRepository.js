@@ -1,12 +1,13 @@
 const { Db, Collection, ObjectId } = require('mongodb');
 const { BaseRepository, PaginatedRepository } = require('./BaseRepository.js');
+const { EmbeddedRepository } = require('./EmbeddedRepository.js');
 
 const COLLECTION_SUPPLIES = 'supplies';
 const COLLECTION_PRODUCTS = 'products';
 
 /**
  * MongoDB Supply Repository implementing ISupplyRepository interface
- * Extends BaseRepository for common CRUD operations
+ * Uses separate supplies collection (legacy pattern)
  */
 class MongoSupplyRepository extends BaseRepository {
   /**
@@ -145,7 +146,173 @@ class MongoSupplyRepository extends BaseRepository {
 }
 
 /**
- * Paginated Supply Repository
+ * MongoDB Embedded Supply Repository implementing ISupplyRepository interface
+ * Uses embedded document pattern per MONGODB_SCHEMA_PROPOSAL.md
+ * Supplies are embedded within the products collection
+ */
+class MongoEmbeddedSupplyRepository extends EmbeddedRepository {
+  /**
+   * @param {Db} db - MongoDB database instance
+   */
+  constructor(db) {
+    super(db);
+    this.collectionName = COLLECTION_PRODUCTS;
+    this.parentIdField = '_id';
+    this.childrenField = 'supplies';
+  }
+
+  /**
+   * Find supplies by product ID (embedded)
+   * @param {string} productId - Product ID
+   * @returns {Promise<Array>} Array of supplies
+   */
+  async findByProductId(productId) {
+    const product = await this.findParentById(productId);
+    if (!product || !product.supplies) return [];
+    
+    return product.supplies.map(this.mapToSupply);
+  }
+
+  /**
+   * Create supplies for a product (replace existing supplies)
+   * @param {string} productId - Product ID
+   * @param {Array} supplies - Array of supply data
+   * @returns {Promise<boolean>} Whether supplies were created
+   */
+  async create(productId, supplies) {
+    if (!ObjectId.isValid(productId)) return false;
+
+    const suppliesWithIds = supplies.map(supply => ({
+      _id: new ObjectId(),
+      identity_id: supply.id,
+      name: supply.name,
+      value: supply.value,
+      qt: supply.qt,
+      qtvalue: supply.qtValue,
+      unit: supply.unit,
+      computed_cost: this.computeSupplyCost(supply.value, supply.qt, supply.qtValue, supply.unit)
+    }));
+
+    const result = await this.collection.updateOne(
+      { _id: new ObjectId(productId) },
+      {
+        $set: {
+          supplies: suppliesWithIds,
+          updated_at: new Date()
+        },
+        $inc: { version: 1 }
+      }
+    );
+
+    return result.modifiedCount > 0;
+  }
+
+  /**
+   * Update supply by identity ID and user (webhook endpoint)
+   * @param {string} supplyId - Supply identity ID
+   * @param {string} userId - User ID
+   * @param {Object} data - Updated supply data
+   * @returns {Promise<boolean>} Whether supply was modified
+   */
+  async update(supplyId, userId, data) {
+    const supply = await this.findChildByIdentityIdAndUser(userId, supplyId);
+    if (!supply) return false;
+
+    const currentValue = supply.child.value;
+    const qt = data.qt;
+    const qtvalue = data.qtValue;
+    const unit = data.unit;
+
+    const result = await this.collection.updateOne(
+      {
+        userid: userId,
+        'supplies.identity_id': supplyId
+      },
+      {
+        $set: {
+          'supplies.$[supply].name': data.name,
+          'supplies.$[supply].qt': qt,
+          'supplies.$[supply].qtvalue': qtvalue,
+          'supplies.$[supply].unit': unit,
+          'supplies.$[supply].computed_cost': this.computeSupplyCost(currentValue, qt, qtvalue, unit),
+          updated_at: new Date()
+        },
+        $inc: { version: 1 }
+      },
+      {
+        arrayFilters: [{ 'supply.identity_id': supplyId }]
+      }
+    );
+
+    return result.modifiedCount > 0;
+  }
+
+  /**
+   * Delete all supplies for a product
+   * @param {string} productId - Product ID
+   * @returns {Promise<boolean>} Whether supplies were deleted
+   */
+  async deleteByProductId(productId) {
+    if (!ObjectId.isValid(productId)) return false;
+
+    const result = await this.collection.updateOne(
+      { _id: new ObjectId(productId) },
+      {
+        $set: {
+          supplies: [],
+          updated_at: new Date()
+        },
+        $inc: { version: 1 }
+      }
+    );
+
+    return result.modifiedCount > 0;
+  }
+
+  /**
+   * Delete supply by identity ID and user (webhook endpoint)
+   * @param {string} supplyId - Supply identity ID
+   * @param {string} userId - User ID
+   * @returns {Promise<boolean>} Whether supply was deleted
+   */
+  async deleteByRemoteId(supplyId, userId) {
+    const result = await this.removeChildByIdentityIdAndUser(userId, supplyId);
+    return result;
+  }
+
+  /**
+   * Compute supply cost based on value, quantity, and unit
+   * @param {number} value - Price per unit
+   * @param {number} qt - Quantity in package
+   * @param {number} qtvalue - Quantity used
+   * @param {string} unit - Unit (KG, G, L, ML, UNID)
+   * @returns {number} Computed cost
+   */
+  computeSupplyCost(value, qt, qtvalue, unit) {
+    const baseCost = (value * qtvalue) / qt;
+    return unit === 'KG' ? baseCost / 1000 : baseCost;
+  }
+
+  /**
+   * Map embedded supply document to interface format
+   * @param {Object} doc - Embedded supply document
+   * @returns {Object}
+   */
+  mapToSupply(doc) {
+    return {
+      id: doc._id.toString(),
+      _id: doc.identity_id,
+      name: doc.name,
+      value: doc.value,
+      qt: doc.qt,
+      qtValue: doc.qtvalue,
+      unit: doc.unit
+    };
+  }
+}
+
+/**
+ * Paginated Supply Repository (separate collection)
  * @extends PaginatedRepository
  */
 class MongoSupplyPaginatedRepository extends PaginatedRepository {
@@ -158,7 +325,25 @@ class MongoSupplyPaginatedRepository extends PaginatedRepository {
   }
 }
 
+/**
+ * Paginated Embedded Supply Repository
+ * @extends EmbeddedRepository
+ */
+class MongoEmbeddedSupplyPaginatedRepository extends EmbeddedRepository {
+  /**
+   * @param {Db} db - MongoDB database instance
+   */
+  constructor(db) {
+    super(db);
+    this.collectionName = COLLECTION_PRODUCTS;
+    this.parentIdField = '_id';
+    this.childrenField = 'supplies';
+  }
+}
+
 module.exports = {
   MongoSupplyRepository,
-  MongoSupplyPaginatedRepository
+  MongoEmbeddedSupplyRepository,
+  MongoSupplyPaginatedRepository,
+  MongoEmbeddedSupplyPaginatedRepository
 };
