@@ -15,7 +15,10 @@ class MongoRecalculationRepository extends BaseRepository {
    */
   constructor(db) {
     super(db);
-    this.collectionName = COLLECTION_PRODUCTS;
+  }
+
+  get collectionName() {
+    return COLLECTION_PRODUCTS;
   }
 
   /**
@@ -26,67 +29,121 @@ class MongoRecalculationRepository extends BaseRepository {
    * @returns {Promise<boolean>}
    */
   async executeRecalculate(tax, markup, userId) {
+    const safeTax = Number(tax) || 0;
+    const safeMarkup = Number(markup) || 0;
+
     const pipeline = [
       { $match: { userid: userId } },
       {
         $set: {
           total_extras: {
-            $sum: {
-              $map: {
-                input: '$supplies',
-                as: 's',
-                in: {
-                  $let: {
-                    vars: {
-                      baseCost: { $multiply: ['$$s.value', { $divide: ['$$s.qtvalue', '$$s.qt'] }] }
-                    },
+            $round: [
+              {
+                $sum: {
+                  $map: {
+                    input: { $ifNull: ['$supplies', []] },
+                    as: 's',
                     in: {
                       $cond: [
-                        { $eq: ['$$s.unit', 'KG'] },
-                        { $divide: ['$$baseCost', 1000] },
-                        '$$baseCost'
-                      ]
-                    }
-                  }
-                }
-              }
-            }
+                        { $eq: [{ $ifNull: ['$$s.qt', 0] }, 0] },
+                        0,
+                        {
+                          $let: {
+                            vars: {
+                              baseCost: {
+                                $multiply: [
+                                  { $ifNull: ['$$s.value', 0] },
+                                  { $divide: [{ $ifNull: ['$$s.qtvalue', 0] }, '$$s.qt'] },
+                                ],
+                              },
+                            },
+                            in: {
+                              $cond: [
+                                { $eq: ['$$s.unit', 'KG'] },
+                                { $divide: ['$$baseCost', 1000] },
+                                '$$baseCost',
+                              ],
+                            },
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+              2,
+            ],
           },
           total_fichas: {
-            $sum: {
-              $map: {
-                input: '$recipes',
-                as: 'r',
-                in: {
-                  $multiply: [
-                    { $divide: ['$$r.total', '$$r.yieldvalue'] },
-                    '$$r.quantity'
-                  ]
-                }
-              }
-            }
-          }
-        }
+            $round: [
+              {
+                $sum: {
+                  $map: {
+                    input: { $ifNull: ['$recipes', []] },
+                    as: 'r',
+                    in: {
+                      $cond: [
+                        { $eq: [{ $ifNull: ['$$r.yieldvalue', 0] }, 0] },
+                        0,
+                        {
+                          $multiply: [
+                            {
+                              $divide: [
+                                { $ifNull: ['$$r.total', 0] },
+                                '$$r.yieldvalue',
+                              ],
+                            },
+                            { $ifNull: ['$$r.quantity', 0] },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+              2,
+            ],
+          },
+        },
       },
       {
         $set: {
-          product_cost: { $add: ['$total_extras', '$total_fichas'] },
+          product_cost: { $round: [{ $add: ['$total_extras', '$total_fichas'] }, 2] },
+        },
+      },
+      {
+        $set: {
           product_cost_with_tax: {
-            $add: ['$product_cost', { $multiply: ['$product_cost', { $divide: [tax, 100] }] }]
+            $round: [
+              { $add: ['$product_cost', { $multiply: ['$product_cost', { $divide: [safeTax, 100] }] }] },
+              2,
+            ],
           },
           product_cost_with_markup: {
-            $add: ['$product_cost', { $multiply: ['$product_cost', { $divide: [markup, 100] }] }]
+            $round: [
+              { $add: ['$product_cost', { $multiply: ['$product_cost', { $divide: [safeMarkup, 100] }] }] },
+              2,
+            ],
           },
-          product_cost_with_markup_tax: {
-            $add: [
-              '$product_cost_with_markup',
-              { $multiply: ['$product_cost_with_markup', { $divide: [tax, 100] }] }
-            ]
-          },
-          updated_at: new Date()
-        }
+          updated_at: new Date(),
+        },
       },
-      { $merge: { into: COLLECTION_PRODUCTS, on: '_id', whenMatched: 'merge' } }
+      {
+        $set: {
+          product_cost_with_markup_tax: {
+            $round: [
+              {
+                $add: [
+                  '$product_cost_with_markup',
+                  { $multiply: ['$product_cost_with_markup', { $divide: [safeTax, 100] }] },
+                ],
+              },
+              2,
+            ],
+          },
+        },
+      },
+      { $merge: { into: COLLECTION_PRODUCTS, on: '_id', whenMatched: 'merge' } },
     ];
 
     await this.collection.aggregate(pipeline).toArray();

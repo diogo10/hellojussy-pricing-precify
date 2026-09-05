@@ -15,7 +15,10 @@ class MongoSupplyRepository extends BaseRepository {
    */
   constructor(db) {
     super(db);
-    this.collectionName = COLLECTION_SUPPLIES;
+  }
+
+  get collectionName() {
+    return COLLECTION_SUPPLIES;
   }
 
   /**
@@ -322,7 +325,10 @@ class MongoSupplyPaginatedRepository extends PaginatedRepository {
    */
   constructor(db) {
     super(db);
-    this.collectionName = COLLECTION_SUPPLIES;
+  }
+
+  get collectionName() {
+    return COLLECTION_SUPPLIES;
   }
 }
 
