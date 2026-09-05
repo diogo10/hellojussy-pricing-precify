@@ -1,93 +1,65 @@
-export interface IProductRepository {
-  findAllByUserId(userId: string): Promise<Product[]>;
-  findById(userId: string, productId: string): Promise<ProductWithDetails | null>;
-  create(data: CreateProductDTO): Promise<string>;
-  update(productId: string, data: UpdateProductDTO): Promise<boolean>;
-  delete(productId: string): Promise<boolean>;
-  deleteAllByUserId(userId: string): Promise<boolean>;
-}
+/**
+ * @typedef {Object} Product
+ * @property {string} id
+ * @property {string} product_name
+ * @property {string} userid
+ * @property {string} profit_percentage
+ * @property {number} price
+ * @property {number} product_cost
+ * @property {number} product_cost_with_tax
+ * @property {number} product_cost_with_markup
+ * @property {number} product_cost_with_markup_tax
+ * @property {number} total_fichas
+ * @property {number} total_extras
+ * @property {Date} created_at
+ * @property {Date} updated_at
+ */
 
-export interface Product {
-  id: string;
-  product_name: string;
-  userid: string;
-  profit_percentage: string;
-  price: number;
-  product_cost: number;
-  product_cost_with_tax: number;
-  product_cost_with_markup: number;
-  product_cost_with_markup_tax: number;
-  total_fichas: number;
-  total_extras: number;
-  created_at: Date;
-  updated_at: Date;
-}
+/**
+ * @typedef {Object} ProductWithDetails
+ * @property {string} id
+ * @property {string} product_name
+ * @property {string} userid
+ * @property {string} profit_percentage
+ * @property {number} price
+ * @property {number} product_cost
+ * @property {number} product_cost_with_tax
+ * @property {number} product_cost_with_markup
+ * @property {number} product_cost_with_markup_tax
+ * @property {number} total_fichas
+ * @property {number} total_extras
+ * @property {Date} created_at
+ * @property {Date} updated_at
+ * @property {Array} supplies
+ * @property {Array} recipes
+ */
 
-export interface ProductWithDetails extends Product {
-  supplies: Supply[];
-  recipes: RecipeWithProducts[];
-}
+/**
+ * @typedef {Object} CreateProductDTO
+ * @property {string} name
+ * @property {string} userId
+ * @property {string} prof
+ * @property {number} price
+ * @property {number} cost
+ * @property {number} costWithTax
+ * @property {number} costWithMarkup
+ * @property {number} costWithMarkupTax
+ * @property {number} totalFichas
+ * @property {number} totalExtras
+ */
 
-export interface CreateProductDTO {
-  name: string;
-  userId: string;
-  prof: string;
-  price: number;
-  cost: number;
-  costWithTax: number;
-  costWithMarkup: number;
-  costWithMarkupTax: number;
-  totalFichas: number;
-  totalExtras: number;
-}
+/**
+ * @typedef {Object} UpdateProductDTO
+ * @property {string} name
+ * @property {string} userId
+ * @property {string} prof
+ * @property {number} price
+ * @property {number} cost
+ * @property {number} costWithTax
+ * @property {number} costWithMarkup
+ * @property {number} costWithMarkupTax
+ * @property {number} totalFichas
+ * @property {number} totalExtras
+ */
 
-export interface UpdateProductDTO {
-  name: string;
-  userId: string;
-  prof: string;
-  price: number;
-  cost: number;
-  costWithTax: number;
-  costWithMarkup: number;
-  costWithMarkupTax: number;
-  totalFichas: number;
-  totalExtras: number;
-}
-
-export interface Supply {
-  id: string;
-  _id: string;
-  name: string;
-  value: number;
-  qt: number;
-  qtValue: number;
-  unit: string;
-}
-
-export interface RecipeWithProducts {
-  id: string;
-  _id: string;
-  name: string;
-  value: number;
-  status: string;
-  qt: number;
-  qtValue: number;
-  unit: string;
-  quantity: number;
-  total: number;
-  totalWithTax: number;
-  yieldValue: number;
-  yieldValueUnit: number;
-  products: RecipeProduct[];
-}
-
-export interface RecipeProduct {
-  id: string;
-  _id: string;
-  name: string;
-  value: number;
-  status: string;
-  qt: number;
-  qtValue: number;
-  unit: string;
-}
+module.exports = {};

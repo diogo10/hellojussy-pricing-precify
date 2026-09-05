@@ -1,4 +1,6 @@
-export * from './IProductRepository.js';
-export * from './ISupplyRepository.js';
-export * from './IRecipeRepository.js';
-export * from './IRecalculationRepository.js';
+require('./IProductRepository.js');
+require('./ISupplyRepository.js');
+require('./IRecipeRepository.js');
+require('./IRecalculationRepository.js');
+
+module.exports = {};

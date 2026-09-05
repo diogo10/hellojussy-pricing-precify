@@ -1,72 +1,74 @@
-import { Pool } from 'pg';
-import { Db } from 'mongodb';
-import { IProductRepository, ISupplyRepository, IRecipeRepository, IRecalculationRepository } from '../interfaces/index.js';
-import { PostgresProductRepository, PostgresSupplyRepository, PostgresRecipeRepository, PostgresRecalculationRepository } from '../postgres/index.js';
-import { MongoProductRepository, MongoEmbeddedSupplyRepository, MongoEmbeddedRecipeRepository, MongoRecalculationRepository } from '../mongo/index.js';
+const { PostgresProductRepository, PostgresSupplyRepository, PostgresRecipeRepository, PostgresRecalculationRepository } = require('./postgres/index.js');
+const { MongoProductRepository } = require('./mongo/ProductRepository.js');
+const { MongoEmbeddedSupplyRepository } = require('./mongo/SupplyRepository.js');
+const { MongoEmbeddedRecipeRepository } = require('./mongo/RecipeRepository.js');
+const { MongoRecalculationRepository } = require('./mongo/RecalculationRepository.js');
 
-export type DatabaseType = 'postgres' | 'mongodb';
-
-export interface RepositoryConfig {
-  type: DatabaseType;
-  pgPool?: Pool;
-  mongoDb?: Db;
-}
-
-export class RepositoryFactory {
-  private static instance: RepositoryFactory;
-  private config: RepositoryConfig;
-  private productRepository: IProductRepository | null = null;
-  private supplyRepository: ISupplyRepository | null = null;
-  private recipeRepository: IRecipeRepository | null = null;
-  private recalculationRepository: IRecalculationRepository | null = null;
-
-  private constructor(config: RepositoryConfig) {
+class RepositoryFactory {
+  /**
+   * @param {Object} config - Repository configuration
+   * @param {'postgres'|'mongodb'} config.type - Database type
+   * @param {import('pg').Pool} [config.pgPool] - PostgreSQL pool (postgres only)
+   * @param {import('mongodb').Db} [config.mongoDb] - MongoDB Db (mongodb only)
+   */
+  constructor(config) {
     this.config = config;
+    this.productRepository = null;
+    this.supplyRepository = null;
+    this.recipeRepository = null;
+    this.recalculationRepository = null;
   }
 
-  static initialize(config: RepositoryConfig): RepositoryFactory {
+  static initialize(config) {
     if (!RepositoryFactory.instance) {
       RepositoryFactory.instance = new RepositoryFactory(config);
     }
     return RepositoryFactory.instance;
   }
 
-  static getInstance(): RepositoryFactory {
+  static getInstance() {
     if (!RepositoryFactory.instance) {
       throw new Error('RepositoryFactory not initialized. Call initialize() first.');
     }
     return RepositoryFactory.instance;
   }
 
-  getProductRepository(): IProductRepository {
+  /**
+   * Reset the singleton instance (intended for tests).
+   */
+  static resetInstance() {
+    RepositoryFactory.instance = null;
+  }
+
+  getProductRepository() {
     if (!this.productRepository) {
       this.productRepository = this.createProductRepository();
     }
     return this.productRepository;
   }
 
-  getSupplyRepository(): ISupplyRepository {
+  getSupplyRepository() {
     if (!this.supplyRepository) {
       this.supplyRepository = this.createSupplyRepository();
     }
     return this.supplyRepository;
   }
 
-  getRecipeRepository(): IRecipeRepository {
+  getRecipeRepository() {
     if (!this.recipeRepository) {
       this.recipeRepository = this.createRecipeRepository();
     }
     return this.recipeRepository;
   }
 
-  getRecalculationRepository(): IRecalculationRepository {
+  getRecalculationRepository() {
     if (!this.recalculationRepository) {
       this.recalculationRepository = this.createRecalculationRepository();
     }
     return this.recalculationRepository;
   }
 
-  private createProductRepository(): IProductRepository {
+  createProductRepository() {
     switch (this.config.type) {
       case 'postgres':
         if (!this.config.pgPool) {
@@ -83,7 +85,7 @@ export class RepositoryFactory {
     }
   }
 
-  private createSupplyRepository(): ISupplyRepository {
+  createSupplyRepository() {
     switch (this.config.type) {
       case 'postgres':
         if (!this.config.pgPool) {
@@ -100,7 +102,7 @@ export class RepositoryFactory {
     }
   }
 
-  private createRecipeRepository(): IRecipeRepository {
+  createRecipeRepository() {
     switch (this.config.type) {
       case 'postgres':
         if (!this.config.pgPool) {
@@ -111,13 +113,13 @@ export class RepositoryFactory {
         if (!this.config.mongoDb) {
           throw new Error('MongoDB database required for mongodb repository');
         }
-        return new MongoRecipeRepository(this.config.mongoDb);
+        return new MongoEmbeddedRecipeRepository(this.config.mongoDb);
       default:
         throw new Error(`Unsupported database type: ${this.config.type}`);
     }
   }
 
-  private createRecalculationRepository(): IRecalculationRepository {
+  createRecalculationRepository() {
     switch (this.config.type) {
       case 'postgres':
         if (!this.config.pgPool) {
@@ -134,10 +136,16 @@ export class RepositoryFactory {
     }
   }
 
-  reset(): void {
+  reset() {
     this.productRepository = null;
     this.supplyRepository = null;
     this.recipeRepository = null;
     this.recalculationRepository = null;
   }
 }
+
+RepositoryFactory.instance = null;
+
+module.exports = {
+  RepositoryFactory
+};

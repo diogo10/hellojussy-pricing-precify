@@ -1,51 +1,49 @@
-export interface IRecipeRepository {
-  findByRemoteId(recipeId: string, userId: string): Promise<Recipe[]>;
-  create(productId: string, recipes: CreateRecipeDTO[]): Promise<boolean>;
-  deleteByProductId(productId: string): Promise<boolean>;
-  deleteByRemoteId(recipeId: string, userId: string): Promise<boolean>;
-  deleteById(id: string, userId: string): Promise<boolean>;
-}
+/**
+ * @typedef {Object} Recipe
+ * @property {string} id
+ * @property {string} _id
+ * @property {string} name
+ * @property {number} quantity
+ * @property {number} total
+ * @property {number} totalWithTax
+ * @property {number} yieldValue
+ * @property {number} yieldValueUnit
+ * @property {Array} products
+ */
 
-export interface Recipe {
-  id: string;
-  _id: string;
-  name: string;
-  quantity: number;
-  total: number;
-  totalWithTax: number;
-  yieldValue: number;
-  yieldValueUnit: number;
-  products: RecipeProduct[];
-}
+/**
+ * @typedef {Object} RecipeProduct
+ * @property {string} id
+ * @property {string} _id
+ * @property {string} name
+ * @property {number} value
+ * @property {string} status
+ * @property {number} qt
+ * @property {number} qtValue
+ * @property {string} unit
+ */
 
-export interface RecipeProduct {
-  id: string;
-  _id: string;
-  name: string;
-  value: number;
-  status: string;
-  qt: number;
-  qtValue: number;
-  unit: string;
-}
+/**
+ * @typedef {Object} CreateRecipeDTO
+ * @property {string} id
+ * @property {string} name
+ * @property {number} total
+ * @property {number} totalWithTax
+ * @property {number} yieldValue
+ * @property {number} yieldValueUnit
+ * @property {number} quantity
+ * @property {Array} products
+ */
 
-export interface CreateRecipeDTO {
-  id: string;
-  name: string;
-  total: number;
-  totalWithTax: number;
-  yieldValue: number;
-  yieldValueUnit: number;
-  quantity: number;
-  products: CreateRecipeProductDTO[];
-}
+/**
+ * @typedef {Object} CreateRecipeProductDTO
+ * @property {string} id
+ * @property {string} name
+ * @property {number} value
+ * @property {string} status
+ * @property {number} qt
+ * @property {number} qtValue
+ * @property {string} unit
+ */
 
-export interface CreateRecipeProductDTO {
-  id: string;
-  name: string;
-  value: number;
-  status: string;
-  qt: number;
-  qtValue: number;
-  unit: string;
-}
+module.exports = {};

@@ -7,9 +7,14 @@ describe("Should validate MongoDB Recipe Repository operations", () => {
   let db;
   let recipeRepository;
 
-  before(async () => {
-    const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pricing_precify_test';
-    mongoClient = new MongoClient(uri);
+  before(async function () {
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      this.skip();
+      return;
+    }
+
+    mongoClient = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
     await mongoClient.connect();
     db = mongoClient.db();
     recipeRepository = new MongoEmbeddedRecipeRepository(db);

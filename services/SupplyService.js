@@ -1,13 +1,16 @@
-import { RepositoryFactory } from '../repositories/RepositoryFactory.js';
-import { ISupplyRepository, IRecalculationRepository } from '../repositories/interfaces/index.js';
+const { RepositoryFactory } = require('../repositories/RepositoryFactory.js');
 
-export class SupplyService {
-  constructor(
-    private supplyRepository: ISupplyRepository,
-    private recalculationRepository: IRecalculationRepository
-  ) {}
+class SupplyService {
+  /**
+   * @param {Object} supplyRepository - ISupplyRepository implementation
+   * @param {Object} recalculationRepository - IRecalculationRepository implementation
+   */
+  constructor(supplyRepository, recalculationRepository) {
+    this.supplyRepository = supplyRepository;
+    this.recalculationRepository = recalculationRepository;
+  }
 
-  static createFromFactory(): SupplyService {
+  static createFromFactory() {
     const factory = RepositoryFactory.getInstance();
     return new SupplyService(
       factory.getSupplyRepository(),
@@ -15,7 +18,7 @@ export class SupplyService {
     );
   }
 
-  async updateSupply(supplyId: string, userId: string, supplyData: any): Promise<boolean> {
+  async updateSupply(supplyId, userId, supplyData) {
     const updated = await this.supplyRepository.update(supplyId, userId, {
       name: supplyData.name,
       qt: supplyData.qt,
@@ -33,7 +36,7 @@ export class SupplyService {
     return updated;
   }
 
-  async deleteSupply(supplyId: string, userId: string): Promise<boolean> {
+  async deleteSupply(supplyId, userId) {
     const deleted = await this.supplyRepository.deleteByRemoteId(supplyId, userId);
     if (deleted) {
       const tax = 0;
@@ -43,3 +46,7 @@ export class SupplyService {
     return deleted;
   }
 }
+
+module.exports = {
+  SupplyService
+};

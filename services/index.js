@@ -1,3 +1,9 @@
-export * from './ProductService.js';
-export * from './RecipeService.js';
-export * from './SupplyService.js';
+const { ProductService } = require('./ProductService.js');
+const { RecipeService } = require('./RecipeService.js');
+const { SupplyService } = require('./SupplyService.js');
+
+module.exports = {
+  ProductService,
+  RecipeService,
+  SupplyService
+};

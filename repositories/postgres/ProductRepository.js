@@ -1,6 +1,3 @@
-import { Pool } from 'pg';
-import { IProductRepository, Product, ProductWithDetails, CreateProductDTO, UpdateProductDTO, Supply, RecipeWithProducts, RecipeProduct } from '../interfaces/index.js';
-
 const SELECT_PRODUCTS_BY_USER = 'SELECT * FROM products WHERE userid = $1 ORDER BY id DESC';
 const SELECT_PRODUCT_BY_ID = 'SELECT * FROM products WHERE userid = $1 AND id = $2';
 const INSERT_PRODUCT = `INSERT INTO products
@@ -19,15 +16,20 @@ const SELECT_SUPPLIES = 'SELECT id, supply_identity_id as _id, supply_name as na
 const SELECT_RECIPES = 'SELECT id, recipe_identity_id as _id, recipe_name as name, total, totalwithtax, yieldvalue, yieldvalueunit, quantity FROM products_recipes WHERE product_id = $1';
 const SELECT_RECIPE_PRODUCTS = 'SELECT id, recipes_products_identity_id as _id, recipe_product_name as name, value, status, qt, qtvalue, unit FROM products_recipes_products WHERE products_recipes_id = $1';
 
-export class PostgresProductRepository implements IProductRepository {
-  constructor(private pool: Pool) {}
+class PostgresProductRepository {
+  /**
+   * @param {import('pg').Pool} pool - PostgreSQL connection pool
+   */
+  constructor(pool) {
+    this.pool = pool;
+  }
 
-  async findAllByUserId(userId: string): Promise<Product[]> {
+  async findAllByUserId(userId) {
     const result = await this.pool.query(SELECT_PRODUCTS_BY_USER, [userId]);
     return result.rows;
   }
 
-  async findById(userId: string, productId: string): Promise<ProductWithDetails | null> {
+  async findById(userId, productId) {
     const productResult = await this.pool.query(SELECT_PRODUCT_BY_ID, [userId, productId]);
     if (!productResult.rows.length) {
       return null;
@@ -56,7 +58,7 @@ export class PostgresProductRepository implements IProductRepository {
     };
   }
 
-  async create(data: CreateProductDTO): Promise<string> {
+  async create(data) {
     const values = [
       data.name, data.userId, data.prof, data.price, data.cost,
       data.costWithTax, data.costWithMarkup, data.costWithMarkupTax,
@@ -66,7 +68,7 @@ export class PostgresProductRepository implements IProductRepository {
     return result.rows[0].id;
   }
 
-  async update(productId: string, data: UpdateProductDTO): Promise<boolean> {
+  async update(productId, data) {
     const values = [
       data.name, data.userId, data.prof, data.price, data.cost,
       data.costWithTax, data.costWithMarkup, data.costWithMarkupTax,
@@ -76,13 +78,17 @@ export class PostgresProductRepository implements IProductRepository {
     return result.rowCount > 0;
   }
 
-  async delete(productId: string): Promise<boolean> {
+  async delete(productId) {
     const result = await this.pool.query(DELETE_PRODUCT, [productId]);
     return result.rowCount > 0;
   }
 
-  async deleteAllByUserId(userId: string): Promise<boolean> {
+  async deleteAllByUserId(userId) {
     const result = await this.pool.query(DELETE_ALL_PRODUCTS, [userId]);
     return result.rowCount >= 0;
   }
 }
+
+module.exports = {
+  PostgresProductRepository
+};
