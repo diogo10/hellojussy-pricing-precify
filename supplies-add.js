@@ -1,38 +1,52 @@
-const queries = require("./supplies_queries");
-const text = queries.SUPPLY_INSERT;
+/**
+ * MongoDB Supplies Add Module
+ * Uses MongoEmbeddedSupplyRepository to create supplies for a product
+ */
 
-async function queryAddSupplies(pool, parentId, list) {
+const { MongoEmbeddedSupplyRepository } = require('./repositories/mongo/SupplyRepository.js');
 
-  const pArray = list.map(async element => {
+let supplyRepository = null;
 
-    var values = [element.name, element.value, element.qt, 
-      element.qtValue, element.unit, parentId, element.id];
-
-    const response = await executeQuery(pool, values);
-    return response;
-  });
-
-  const results = await Promise.all(pArray);
-
-  let resultToReturn = results.every(function (e) {
-    return e;
-  });
-
-  return resultToReturn;
+/**
+ * Initialize the supply repository
+ * @param {Db} db - MongoDB database instance
+ */
+function initializeSupplyRepository(db) {
+  supplyRepository = new MongoEmbeddedSupplyRepository(db);
 }
 
-async function executeQuery(pool, values) {
+/**
+ * Add supplies to a product
+ * @param {Object} db - MongoDB database instance
+ * @param {string} productId - Product ID
+ * @param {Array} list - Array of supply objects
+ * @returns {Promise<boolean>} Whether all supplies were created
+ */
+async function queryAddSupplies(db, productId, list) {
+  if (!supplyRepository) {
+    initializeSupplyRepository(db);
+  }
+
+  const supplies = list.map(element => ({
+    id: element.id ?? element._id,
+    name: element.name,
+    value: element.value,
+    qt: element.qt,
+    qtValue: element.qtValue ?? element.qtvalue,
+    unit: element.unit
+  }));
+
   try {
-    const response = await pool.query(text, values);
-    const resultId = response.rows[0].id;
-    console.log("add supply id: " + resultId);
-    return resultId != null;
+    const result = await supplyRepository.create(productId, supplies);
+    console.log("addSupplies: Created supplies for product " + productId + " - " + (result ? "OK" : "NOK"));
+    return result;
   } catch (err) {
-    console.log(err.stack)
+    console.log("addSupplies error: " + err.stack);
     return false;
   }
 }
 
 module.exports = {
-  queryAddSupplies
-}
+  queryAddSupplies,
+  initializeSupplyRepository
+};

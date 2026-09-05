@@ -1,5 +1,7 @@
 const { MongoClient } = require('mongodb');
 const { MongoProductRepository } = require('./repositories/mongo/ProductRepository.js');
+const { RepositoryFactory } = require('./repositories/RepositoryFactory.js');
+const { SupplyService } = require('./services/SupplyService.js');
 
 const productAdd = require("./product-add");
 const productDelete = require("./product-delete");
@@ -9,13 +11,16 @@ const recal = require("./recal");
 
 let mongoClient = null;
 let productRepository = null;
+let supplyService = null;
 
 /**
- * Initialize MongoDB connection and product repository
- * @returns {Promise<MongoProductRepository>}
+ * Initialize MongoDB connection and repositories
+ * @returns {Promise<{productRepository: MongoProductRepository, supplyService: SupplyService}>}
  */
-async function getProductRepository() {
-  if (productRepository) return productRepository;
+async function initializeRepositories() {
+  if (productRepository && supplyService) {
+    return { productRepository, supplyService };
+  }
 
   const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pricing_precify';
   
@@ -25,8 +30,32 @@ async function getProductRepository() {
   }
 
   const db = mongoClient.db();
+  
+  // Initialize RepositoryFactory with MongoDB
+  RepositoryFactory.initialize({ type: 'mongodb', mongoDb: db });
+  
   productRepository = new MongoProductRepository(db);
-  return productRepository;
+  supplyService = SupplyService.createFromFactory();
+  
+  return { productRepository, supplyService };
+}
+
+/**
+ * Get product repository (initializes if needed)
+ * @returns {Promise<MongoProductRepository>}
+ */
+async function getProductRepository() {
+  const { productRepository: repo } = await initializeRepositories();
+  return repo;
+}
+
+/**
+ * Get supply service (initializes if needed)
+ * @returns {Promise<SupplyService>}
+ */
+async function getSupplyService() {
+  const { supplyService: service } = await initializeRepositories();
+  return service;
 }
 
 /**
@@ -38,6 +67,8 @@ async function closeConnection() {
     await mongoClient.close();
     mongoClient = null;
     productRepository = null;
+    supplyService = null;
+    RepositoryFactory.getInstance().reset();
   }
 }
 
@@ -137,9 +168,17 @@ const deleteRecipe = async (request, response) => {
  * @param {*} response - OK or NOK(it does not mean bad in this situation)
  */
 const updateSupply = async (request, response) => {
-  // Note: This still uses PostgreSQL for supply update
-  // Should be migrated to use MongoDB repository
-  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
+  const body = request.body;
+  const userId = extractToken(request);
+  
+  try {
+    const service = await getSupplyService();
+    const updated = await service.updateSupply(body.id ?? body._id, userId, body);
+    response.status(200).json({ status: updated ? "OK" : "NOK" });
+  } catch (err) {
+    console.log("updateSupply error: " + err.stack);
+    response.status(500).json({ status: "NOK", message: "Internal error" });
+  }
 };
 
 /**
@@ -148,9 +187,17 @@ const updateSupply = async (request, response) => {
  * @param {*} response - OK or NOK(it does not mean bad in this situation)
  */
 const deleteSupply = async (request, response) => {
-  // Note: This still uses PostgreSQL for supply deletion
-  // Should be migrated to use MongoDB repository
-  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
+  const supplyId = request.body.id ?? request.body._id;
+  const userId = extractToken(request);
+  
+  try {
+    const service = await getSupplyService();
+    const deleted = await service.deleteSupply(supplyId, userId);
+    response.status(200).json({ status: deleted ? "OK" : "NOK" });
+  } catch (err) {
+    console.log("deleteSupply error: " + err.stack);
+    response.status(500).json({ status: "NOK", message: "Internal error" });
+  }
 };
 
 const recalculate = async (request, response) => {

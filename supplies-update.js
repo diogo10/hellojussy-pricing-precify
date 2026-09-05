@@ -1,13 +1,56 @@
-const utils = require("./db-util");
-const queries = require("./supplies_queries");
-const sql = queries.SUPPLY_UPDATE_TRIGGER_EVENT;
+/**
+ * MongoDB Supplies Update Module
+ * Uses MongoEmbeddedSupplyRepository to update a supply by identity_id
+ */
 
-async function updateSupplies(pool, supply, userId) {
-  var values = mapSupplyBody(supply, userId);
-  var hasUpdated = await utils.executeUpdateQuery(pool, sql, values);
-  return hasUpdated;
+const { MongoEmbeddedSupplyRepository } = require('./repositories/mongo/SupplyRepository.js');
+
+let supplyRepository = null;
+
+/**
+ * Initialize the supply repository
+ * @param {Db} db - MongoDB database instance
+ */
+function initializeSupplyRepository(db) {
+  supplyRepository = new MongoEmbeddedSupplyRepository(db);
 }
 
+/**
+ * Update a supply by its identity_id
+ * @param {Object} db - MongoDB database instance
+ * @param {Object} supply - Supply data to update
+ * @param {string} userId - User ID
+ * @returns {Promise<boolean>} Whether supply was updated
+ */
+async function updateSupplies(db, supply, userId) {
+  if (!supplyRepository) {
+    initializeSupplyRepository(db);
+  }
+
+  const supplyId = supply.id ?? supply._id;
+  const data = {
+    name: supply.name,
+    qt: supply.qt,
+    qtValue: supply.qtValue ?? supply.qtvalue,
+    unit: supply.unit
+  };
+
+  try {
+    const result = await supplyRepository.update(supplyId, userId, data);
+    console.log("updateSupplies: Updated supply " + supplyId + " for user " + userId + " - " + (result ? "OK" : "NOK"));
+    return result;
+  } catch (err) {
+    console.log("updateSupplies error: " + err.stack);
+    return false;
+  }
+}
+
+/**
+ * Map supply body to array format (legacy function for backwards compatibility)
+ * @param {Object} supply - Supply data
+ * @param {string} userId - User ID
+ * @returns {Array} Mapped values array
+ */
 function mapSupplyBody(supply, userId) {
   var id = supply.id;
 
@@ -22,7 +65,7 @@ function mapSupplyBody(supply, userId) {
   return [
     supply.name,
     supply.qt,
-    supply.qtValue,
+    supply.qtValue ?? supply.qtvalue,
     supply.unit,
     id,
     userId,
@@ -30,5 +73,7 @@ function mapSupplyBody(supply, userId) {
 }
 
 module.exports = {
-  updateSupplies, mapSupplyBody
+  updateSupplies,
+  initializeSupplyRepository,
+  mapSupplyBody
 };

@@ -1,3 +1,12 @@
+/**
+ * @deprecated This file contains PostgreSQL queries for the legacy supplies implementation.
+ * For MongoDB, use the MongoEmbeddedSupplyRepository from repositories/mongo/SupplyRepository.js
+ * which implements the ISupplyRepository interface.
+ * 
+ * The new MongoDB implementation uses embedded documents within the products collection
+ * per the MONGODB_SCHEMA_PROPOSAL.md design.
+ */
+
 const SUPPLY_INSERT =
   "INSERT INTO products_supplies(supply_name, value, qt, qtvalue, unit, product_id, supply_identity_id) " +
   "VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id";
@@ -17,7 +26,7 @@ const SUPPLY_UPDATE =
   "where supply_identity_id=$6 " +
   "AND product_id in (select id from products where userid = $7)";
 
-  const SUPPLY_UPDATE_TRIGGER_EVENT =
+const SUPPLY_UPDATE_TRIGGER_EVENT =
   "UPDATE products_supplies SET " +
   "supply_name=$1, qt=$2, qtvalue=$3, unit=$4" +
   "where supply_identity_id=$5 " +
