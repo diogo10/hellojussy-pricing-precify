@@ -1,16 +1,16 @@
 const recipeDelete = require("./recipes-delete");
 const recipeAdd = require("./recipes-add");
 
-async function recalRecipe(pool, recipeBody, userId, recipeList) {
+async function recalRecipe(recipeBody, userId, recipeList) {
   const pArray = recipeList.map(async (element) => {
     var productId = element.product_id;
     var quantity = element.quantity;
     recipeBody.quantity = quantity;
     var id = element.id;
 
-    var hasDeleted = await recipeDelete.queryDeleteRecipeById(pool, id, userId);
+    var hasDeleted = await recipeDelete.queryDeleteRecipeById(id, userId);
     console.log("recalRecipe: hasDeleted: " + hasDeleted);
-    var hasIncluded = await recipeAdd.queryAddRecipes(pool, productId, [
+    var hasIncluded = await recipeAdd.queryAddRecipes(productId, [
       recipeBody,
     ]);
     console.log("hasIncluded: " + hasIncluded);

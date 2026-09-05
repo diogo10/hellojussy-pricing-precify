@@ -1,76 +1,62 @@
-const text1 = 'INSERT INTO products_recipes(recipe_name, total,' +
-'totalwithtax, yieldvalue, yieldvalueunit, product_id, recipe_identity_id, quantity)'
-  + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id';
+const { MongoClient } = require('mongodb');
+const { MongoEmbeddedRecipeRepository } = require('./repositories/mongo/RecipeRepository.js');
 
-const text2 = 'INSERT INTO products_recipes_products' +
-  '(recipe_product_name, value, status, qt, qtvalue, unit, products_recipes_id, recipes_products_identity_id)'
-  + ' VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id';
+let mongoClient = null;
+let recipeRepository = null;
 
+/**
+ * Initialize MongoDB connection and recipe repository
+ * @returns {Promise<MongoEmbeddedRecipeRepository>}
+ */
+async function getRecipeRepository() {
+  if (recipeRepository) return recipeRepository;
 
-async function queryAddRecipes(pool, parentId, list) {
-  console.log("queryAddRecipes: " + parentId);
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pricing_precify';
 
-  const pArray = list.map(async element => {
+  if (!mongoClient) {
+    mongoClient = new MongoClient(uri);
+    await mongoClient.connect();
+  }
 
-    var valuesRecipes = [element.name,
-    element.total, element.totalWithTax, element.yieldValue,
-    element.yieldValueUnit, parentId, element.id, element.quantity];
-
-    const recipeId = await executeRecipeQuery(pool, valuesRecipes);
-
-    if (recipeId != null) {
-      const products = element.products;
-      products.forEach(async item => {
-
-        var valuesProduct = [item.name, item.value, item.status, item.qt,
-        item.qtValue, item.unit, recipeId, item.id];
-
-        const productAdded = await executeRecipeProductsQuery(pool, valuesProduct);
-        console.log("productAdded: " + productAdded);
-      });
-
-
-      return true;
-    } else {
-      return false;
-    }
-
-  });
-
-  const results = await Promise.all(pArray);
-
-  let resultToReturn = results.every(function (e) {
-    return e;
-  });
-
-  console.log("queryAddRecipes: " + resultToReturn);
-  return resultToReturn;
+  const db = mongoClient.db();
+  recipeRepository = new MongoEmbeddedRecipeRepository(db);
+  return recipeRepository;
 }
 
-async function executeRecipeQuery(pool, values) {
-  try {
-    const response = await pool.query(text1, values);
-    const resultId = response.rows[0].id;
-    console.log("add recipe id: " + resultId);
-    return resultId;
-  } catch (err) {
-    console.log(err.stack)
-    return null;
+/**
+ * Close MongoDB connection
+ * @returns {Promise<void>}
+ */
+async function closeConnection() {
+  if (mongoClient) {
+    await mongoClient.close();
+    mongoClient = null;
+    recipeRepository = null;
   }
 }
 
-async function executeRecipeProductsQuery(pool, values) {
+/**
+ * Add recipes to a product (replaces existing recipes)
+ * @param {string} productId - Product ID
+ * @param {Array} list - Array of recipe data
+ * @returns {Promise<boolean>} Whether recipes were added
+ */
+async function queryAddRecipes(productId, list) {
+  console.log("queryAddRecipes: " + productId);
+
   try {
-    const response = await pool.query(text2, values);
-    const result = response.rows[0].id !== null;
-    console.log("add recipe products id: " + result);
+    const repo = await getRecipeRepository();
+    const result = await repo.create(productId, list);
+    console.log("queryAddRecipes: " + result);
     return result;
   } catch (err) {
-    console.log(err.stack)
+    console.log(err.stack);
     return false;
   }
 }
 
 module.exports = {
-  queryAddRecipes
-}
+  queryAddRecipes,
+  getRecipeRepository,
+  closeConnection
+};

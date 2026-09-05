@@ -6,33 +6,46 @@ const { Db, Collection, ObjectId } = require('mongodb');
 class EmbeddedRepository {
   /**
    * @param {Db} db - MongoDB database instance
+   * @param {Object} options - Configuration options
+   * @param {string} options.collectionName - Name of the parent collection
+   * @param {string} options.parentIdField - Field name for parent ID
+   * @param {string} options.childrenField - Field name for children array
    */
-  constructor(db) {
+  constructor(db, options = {}) {
     this.db = db;
+    this._collectionName = options.collectionName;
+    this._parentIdField = options.parentIdField;
+    this._childrenField = options.childrenField;
   }
 
   /**
-   * @abstract
    * @type {string}
    */
   get collectionName() {
-    throw new Error('collectionName must be implemented by subclass');
+    if (!this._collectionName) {
+      throw new Error('collectionName must be provided in constructor options');
+    }
+    return this._collectionName;
   }
 
   /**
-   * @abstract
    * @type {string}
    */
   get parentIdField() {
-    throw new Error('parentIdField must be implemented by subclass');
+    if (!this._parentIdField) {
+      throw new Error('parentIdField must be provided in constructor options');
+    }
+    return this._parentIdField;
   }
 
   /**
-   * @abstract
    * @type {string}
    */
   get childrenField() {
-    throw new Error('childrenField must be implemented by subclass');
+    if (!this._childrenField) {
+      throw new Error('childrenField must be provided in constructor options');
+    }
+    return this._childrenField;
   }
 
   /**
