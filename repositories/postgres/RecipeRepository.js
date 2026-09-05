@@ -1,6 +1,3 @@
-import { Pool } from 'pg';
-import { IRecipeRepository, Recipe, CreateRecipeDTO, CreateRecipeProductDTO } from '../interfaces/index.js';
-
 const SELECT_RECIPES_BY_REMOTE_ID = `SELECT * FROM products_recipes pr
   WHERE pr.recipe_identity_id = $1
   AND product_id IN (SELECT id FROM products WHERE userid = $2)`;
@@ -19,12 +16,17 @@ const DELETE_RECIPE_BY_ID = `DELETE FROM products_recipes
   WHERE id = $1
   AND product_id IN (SELECT id FROM products WHERE userid = $2)`;
 
-export class PostgresRecipeRepository implements IRecipeRepository {
-  constructor(private pool: Pool) {}
+class PostgresRecipeRepository {
+  /**
+   * @param {import('pg').Pool} pool - PostgreSQL connection pool
+   */
+  constructor(pool) {
+    this.pool = pool;
+  }
 
-  async findByRemoteId(recipeId: string, userId: string): Promise<Recipe[]> {
+  async findByRemoteId(recipeId, userId) {
     const recipesResult = await this.pool.query(SELECT_RECIPES_BY_REMOTE_ID, [recipeId, userId]);
-    
+
     const recipesWithProducts = await Promise.all(
       recipesResult.rows.map(async (recipe) => {
         const productsResult = await this.pool.query(SELECT_RECIPE_PRODUCTS, [recipe.id]);
@@ -39,7 +41,7 @@ export class PostgresRecipeRepository implements IRecipeRepository {
     return recipesWithProducts;
   }
 
-  async create(productId: string, recipes: CreateRecipeDTO[]): Promise<boolean> {
+  async create(productId, recipes) {
     for (const recipe of recipes) {
       const recipeValues = [
         recipe.name, recipe.total, recipe.totalWithTax,
@@ -62,18 +64,22 @@ export class PostgresRecipeRepository implements IRecipeRepository {
     return true;
   }
 
-  async deleteByProductId(productId: string): Promise<boolean> {
+  async deleteByProductId(productId) {
     const result = await this.pool.query(DELETE_RECIPES_BY_PRODUCT, [productId]);
     return result.rowCount >= 0;
   }
 
-  async deleteByRemoteId(recipeId: string, userId: string): Promise<boolean> {
+  async deleteByRemoteId(recipeId, userId) {
     const result = await this.pool.query(DELETE_RECIPE_BY_REMOTE_ID, [recipeId, userId]);
     return result.rowCount > 0;
   }
 
-  async deleteById(id: string, userId: string): Promise<boolean> {
+  async deleteById(id, userId) {
     const result = await this.pool.query(DELETE_RECIPE_BY_ID, [id, userId]);
     return result.rowCount > 0;
   }
 }
+
+module.exports = {
+  PostgresRecipeRepository
+};

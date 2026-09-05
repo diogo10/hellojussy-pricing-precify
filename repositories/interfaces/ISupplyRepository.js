@@ -1,33 +1,30 @@
-export interface ISupplyRepository {
-  findByProductId(productId: string): Promise<Supply[]>;
-  create(productId: string, supplies: CreateSupplyDTO[]): Promise<boolean>;
-  update(supplyId: string, userId: string, data: UpdateSupplyDTO): Promise<boolean>;
-  deleteByProductId(productId: string): Promise<boolean>;
-  deleteByRemoteId(supplyId: string, userId: string): Promise<boolean>;
-}
+/**
+ * @typedef {Object} Supply
+ * @property {string} id
+ * @property {string} _id
+ * @property {string} name
+ * @property {number} value
+ * @property {number} qt
+ * @property {number} qtValue
+ * @property {string} unit
+ */
 
-export interface Supply {
-  id: string;
-  _id: string;
-  name: string;
-  value: number;
-  qt: number;
-  qtValue: number;
-  unit: string;
-}
+/**
+ * @typedef {Object} CreateSupplyDTO
+ * @property {string} id
+ * @property {string} name
+ * @property {number} value
+ * @property {number} qt
+ * @property {number} qtValue
+ * @property {string} unit
+ */
 
-export interface CreateSupplyDTO {
-  id: string;
-  name: string;
-  value: number;
-  qt: number;
-  qtValue: number;
-  unit: string;
-}
+/**
+ * @typedef {Object} UpdateSupplyDTO
+ * @property {string} name
+ * @property {number} qt
+ * @property {number} qtValue
+ * @property {string} unit
+ */
 
-export interface UpdateSupplyDTO {
-  name: string;
-  qt: number;
-  qtValue: number;
-  unit: string;
-}
+module.exports = {};

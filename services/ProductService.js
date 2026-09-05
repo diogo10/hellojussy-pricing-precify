@@ -1,16 +1,20 @@
-import { RepositoryFactory } from '../repositories/RepositoryFactory.js';
-import { IProductRepository, ISupplyRepository, IRecipeRepository, IRecalculationRepository } from '../repositories/interfaces/index.js';
-import { ProductWithDetails, CreateProductDTO, UpdateProductDTO, CreateSupplyDTO, CreateRecipeDTO } from '../repositories/interfaces/index.js';
+const { RepositoryFactory } = require('../repositories/RepositoryFactory.js');
 
-export class ProductService {
-  constructor(
-    private productRepository: IProductRepository,
-    private supplyRepository: ISupplyRepository,
-    private recipeRepository: IRecipeRepository,
-    private recalculationRepository: IRecalculationRepository
-  ) {}
+class ProductService {
+  /**
+   * @param {Object} productRepository - IProductRepository implementation
+   * @param {Object} supplyRepository - ISupplyRepository implementation
+   * @param {Object} recipeRepository - IRecipeRepository implementation
+   * @param {Object} recalculationRepository - IRecalculationRepository implementation
+   */
+  constructor(productRepository, supplyRepository, recipeRepository, recalculationRepository) {
+    this.productRepository = productRepository;
+    this.supplyRepository = supplyRepository;
+    this.recipeRepository = recipeRepository;
+    this.recalculationRepository = recalculationRepository;
+  }
 
-  static createFromFactory(): ProductService {
+  static createFromFactory() {
     const factory = RepositoryFactory.getInstance();
     return new ProductService(
       factory.getProductRepository(),
@@ -20,17 +24,17 @@ export class ProductService {
     );
   }
 
-  async getAllProducts(userId: string) {
+  async getAllProducts(userId) {
     return this.productRepository.findAllByUserId(userId);
   }
 
-  async getProductById(userId: string, productId: string): Promise<ProductWithDetails | null> {
+  async getProductById(userId, productId) {
     return this.productRepository.findById(userId, productId);
   }
 
-  async createProduct(data: CreateProductDTO, supplies: CreateSupplyDTO[], recipes: CreateRecipeDTO[]) {
+  async createProduct(data, supplies, recipes) {
     const productId = await this.productRepository.create(data);
-    
+
     if (supplies.length > 0) {
       const suppliesCreated = await this.supplyRepository.create(productId, supplies);
       if (!suppliesCreated) {
@@ -51,7 +55,7 @@ export class ProductService {
     return productId;
   }
 
-  async updateProduct(productId: string, data: UpdateProductDTO, supplies: CreateSupplyDTO[], recipes: CreateRecipeDTO[]) {
+  async updateProduct(productId, data, supplies, recipes) {
     const updated = await this.productRepository.update(productId, data);
     if (!updated) {
       throw new Error('Product not found or update failed');
@@ -70,13 +74,17 @@ export class ProductService {
     return true;
   }
 
-  async deleteProduct(productId: string) {
+  async deleteProduct(productId) {
     await this.supplyRepository.deleteByProductId(productId);
     await this.recipeRepository.deleteByProductId(productId);
     return this.productRepository.delete(productId);
   }
 
-  async deleteAllProducts(userId: string) {
+  async deleteAllProducts(userId) {
     return this.recalculationRepository.deleteAll(userId);
   }
 }
+
+module.exports = {
+  ProductService
+};
