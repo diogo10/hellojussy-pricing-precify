@@ -46,12 +46,11 @@ async function updateSupplies(db, supply, userId) {
 }
 
 /**
- * Map supply body to array format (legacy function for backwards compatibility)
+ * Map supply body to object format
  * @param {Object} supply - Supply data
- * @param {string} userId - User ID
- * @returns {Array} Mapped values array
+ * @returns {Object} Mapped values object
  */
-function mapSupplyBody(supply, userId) {
+function mapSupplyBody(supply) {
   var id = supply.id;
 
   if (id === undefined) {
@@ -62,14 +61,12 @@ function mapSupplyBody(supply, userId) {
     id = "";
   }
 
-  return [
-    supply.name,
-    supply.qt,
-    supply.qtValue ?? supply.qtvalue,
-    supply.unit,
-    id,
-    userId,
-  ];
+  return {
+    name: supply.name,
+    qt: supply.qt,
+    qtValue: supply.qtValue ?? supply.qtvalue,
+    unit: supply.unit
+  };
 }
 
 module.exports = {
