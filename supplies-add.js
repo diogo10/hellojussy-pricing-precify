@@ -1,38 +1,32 @@
-const queries = require("./supplies_queries");
-const text = queries.SUPPLY_INSERT;
+/**
+ * MongoDB Supply Add Module
+ * Uses MongoEmbeddedSupplyRepository to add supplies to a product
+ */
 
-async function queryAddSupplies(pool, parentId, list) {
+async function queryAddSupplies(supplyRepository, parentId, list) {
+  if (!list || list.length === 0) {
+    return true;
+  }
 
-  const pArray = list.map(async element => {
+  const supplies = list.map(element => ({
+    id: element.id,
+    name: element.name,
+    value: element.value,
+    qt: element.qt,
+    qtValue: element.qtValue,
+    unit: element.unit
+  }));
 
-    var values = [element.name, element.value, element.qt, 
-      element.qtValue, element.unit, parentId, element.id];
-
-    const response = await executeQuery(pool, values);
-    return response;
-  });
-
-  const results = await Promise.all(pArray);
-
-  let resultToReturn = results.every(function (e) {
-    return e;
-  });
-
-  return resultToReturn;
-}
-
-async function executeQuery(pool, values) {
   try {
-    const response = await pool.query(text, values);
-    const resultId = response.rows[0].id;
-    console.log("add supply id: " + resultId);
-    return resultId != null;
+    const result = await supplyRepository.create(parentId, supplies);
+    console.log("add supplies result: " + result);
+    return result;
   } catch (err) {
-    console.log(err.stack)
+    console.log("add supplies error: " + err.stack);
     return false;
   }
 }
 
 module.exports = {
   queryAddSupplies
-}
+};

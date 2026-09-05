@@ -1,14 +1,21 @@
-const utils = require("./db-util");
-const queries = require("./supplies_queries");
-const sql = queries.SUPPLY_UPDATE_TRIGGER_EVENT;
+/**
+ * MongoDB Supply Update Module
+ * Uses MongoEmbeddedSupplyRepository to update supplies
+ */
 
-async function updateSupplies(pool, supply, userId) {
-  var values = mapSupplyBody(supply, userId);
-  var hasUpdated = await utils.executeUpdateQuery(pool, sql, values);
-  return hasUpdated;
+async function updateSupplies(supplyRepository, supply, userId) {
+  const data = mapSupplyBody(supply);
+
+  try {
+    const hasUpdated = await supplyRepository.update(supply.id, userId, data);
+    return hasUpdated;
+  } catch (err) {
+    console.log("update supply error: " + err.stack);
+    return false;
+  }
 }
 
-function mapSupplyBody(supply, userId) {
+function mapSupplyBody(supply) {
   var id = supply.id;
 
   if (id === undefined) {
@@ -19,16 +26,15 @@ function mapSupplyBody(supply, userId) {
     id = "";
   }
 
-  return [
-    supply.name,
-    supply.qt,
-    supply.qtValue,
-    supply.unit,
-    id,
-    userId,
-  ];
+  return {
+    name: supply.name,
+    qt: supply.qt,
+    qtValue: supply.qtValue,
+    unit: supply.unit
+  };
 }
 
 module.exports = {
-  updateSupplies, mapSupplyBody
+  updateSupplies,
+  mapSupplyBody
 };

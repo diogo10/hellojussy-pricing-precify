@@ -1,14 +1,18 @@
 const { MongoClient } = require('mongodb');
-const { MongoProductRepository } = require('./repositories/mongo/ProductRepository.js');
+const { MongoProductRepository, MongoEmbeddedSupplyRepository } = require('./repositories/mongo/index.js');
 
 const productAdd = require("./product-add");
 const productDelete = require("./product-delete");
 const productUpdate = require("./product-update");
+const suppliesAdd = require("./supplies-add");
+const suppliesDelete = require("./supplies-delete");
+const suppliesUpdate = require("./supplies-update");
 const recipeRecal = require("./recal-recipes");
 const recal = require("./recal");
 
 let mongoClient = null;
 let productRepository = null;
+let supplyRepository = null;
 
 /**
  * Initialize MongoDB connection and product repository
@@ -27,6 +31,25 @@ async function getProductRepository() {
   const db = mongoClient.db();
   productRepository = new MongoProductRepository(db);
   return productRepository;
+}
+
+/**
+ * Initialize MongoDB connection and supply repository
+ * @returns {Promise<MongoEmbeddedSupplyRepository>}
+ */
+async function getSupplyRepository() {
+  if (supplyRepository) return supplyRepository;
+
+  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/pricing_precify';
+  
+  if (!mongoClient) {
+    mongoClient = new MongoClient(uri);
+    await mongoClient.connect();
+  }
+
+  const db = mongoClient.db();
+  supplyRepository = new MongoEmbeddedSupplyRepository(db);
+  return supplyRepository;
 }
 
 /**
@@ -134,12 +157,14 @@ const deleteRecipe = async (request, response) => {
 /**
  * Should update a supply using the actual supply items.
  * @param {*} request - supply body
- * @param {*} response - OK or NOK(it does not mean bad in this situation)
+ * @param {*} response OK or NOK(it does not mean bad in this situation)
  */
 const updateSupply = async (request, response) => {
-  // Note: This still uses PostgreSQL for supply update
-  // Should be migrated to use MongoDB repository
-  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
+  const body = request.body;
+  const userId = extractToken(request);
+  const repo = await getSupplyRepository();
+  const result = await suppliesUpdate.updateSupplies(repo, body, userId);
+  response.status(200).json({ status: result ? "OK" : "NOK" });
 };
 
 /**
@@ -148,9 +173,11 @@ const updateSupply = async (request, response) => {
  * @param {*} response - OK or NOK(it does not mean bad in this situation)
  */
 const deleteSupply = async (request, response) => {
-  // Note: This still uses PostgreSQL for supply deletion
-  // Should be migrated to use MongoDB repository
-  response.status(200).json({ status: "NOK", message: "Not yet migrated to MongoDB" });
+  const supplyId = request.body.id;
+  const userId = extractToken(request);
+  const repo = await getSupplyRepository();
+  const result = await suppliesDelete.queryDeleteSupplyByRemoteId(repo, supplyId, userId);
+  response.status(200).json({ status: result ? "OK" : "NOK" });
 };
 
 const recalculate = async (request, response) => {
@@ -179,5 +206,7 @@ module.exports = {
   deleteSupply,
   recalculate,
   deleteAll,
-  closeConnection
+  closeConnection,
+  getProductRepository,
+  getSupplyRepository
 };
