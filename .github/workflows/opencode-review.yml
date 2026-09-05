@@ -1,8 +1,9 @@
 name: opencode-review
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: "0 9 * * 1" # Every Monday at 9am UTC
+
     
 jobs:
   review:
@@ -11,7 +12,7 @@ jobs:
       id-token: write
       contents: write
       pull-requests: write
-      issues: read
+      issues: write
     steps:
       - uses: actions/checkout@v6
         with:
@@ -30,8 +31,5 @@ jobs:
           model: opencode/muse-spark-1.3-contributor-free
           use_github_token: true
           prompt: |
-            Review this pull request:
-            - Check for code quality issues. Grade it using A to B. Where A is the all good
-            - Look for potential bugs
-            - Suggest improvements 
-            - Push a new commit into the pull request with the improvements. 
+            Review the codebase for any TODO comments and create a summary.
+            If you find issues worth addressing, open an issue to track them.
