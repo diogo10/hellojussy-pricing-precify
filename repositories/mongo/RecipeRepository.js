@@ -16,7 +16,10 @@ class MongoRecipeRepository extends BaseRepository {
    */
   constructor(db) {
     super(db);
-    this.collectionName = COLLECTION_RECIPES;
+  }
+
+  get collectionName() {
+    return COLLECTION_RECIPES;
   }
 
   /**
