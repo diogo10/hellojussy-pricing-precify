@@ -41,9 +41,10 @@ describe('RepositoryFactory', () => {
   it('caches repository instances between calls', () => {
     const factory = RepositoryFactory.initialize({ type: 'mongodb', mongoDb: createFakeDb() });
 
-    assert.strictEqual(factory.getProductRepository(), factory.getProductRepository());
+    const firstRepository = factory.getProductRepository();
+    assert.strictEqual(firstRepository, factory.getProductRepository());
     factory.reset();
-    assert.notStrictEqual(factory.getProductRepository(), factory.getProductRepository());
+    assert.notStrictEqual(firstRepository, factory.getProductRepository());
   });
 
   it('throws for mongodb without a mongoDb handle', () => {

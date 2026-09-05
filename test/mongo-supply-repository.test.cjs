@@ -77,7 +77,7 @@ describe('MongoSupplyRepository (separate collection)', () => {
     const call = lastCall(db._collections.supplies, 'updateOne');
     assert.strictEqual(call.filter.supply_identity_id, 'supply-uuid-001');
     assert.deepStrictEqual(call.filter.product_id, { $in: [productId.toString()] });
-    assert.strictEqual(call.update.qtvalue, 250);
+    assert.strictEqual(call.update.$set.qtvalue, 250);
   });
 
   it('deleteByProductId removes every supply of the product', async () => {
