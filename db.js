@@ -7,7 +7,7 @@
  * applies the aggregation pipeline replacing `procedure_recalculate`.
  */
 
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const { MongoProductRepository } = require('./repositories/mongo/ProductRepository.js');
 const { MongoRecalculationRepository } = require('./repositories/mongo/RecalculationRepository.js');
 
@@ -126,10 +126,23 @@ const getProductGetEdit = async (request, response) => {
 
 const deleteProduct = async (request, response) => {
   const { id } = request.params;
-  const repo = await getProductRepository();
-  const deletedProduct = await productDelete.queryDeleteProduct(repo, id);
-  console.log('delete product: ' + deletedProduct);
-  response.send({ status: deletedProduct ? 'OK' : 'NOK' });
+  if (!id || !ObjectId.isValid(id)) {
+    response.status(400).json({ status: 'NOK', message: 'invalid product id' });
+    return;
+  }
+  try {
+    const repo = await getProductRepository();
+    const deletedProduct = await productDelete.queryDeleteProduct(repo, id);
+    console.log('delete product: ' + deletedProduct);
+    if (!deletedProduct) {
+      response.status(404).json({ status: 'NOK', message: 'product not found' });
+      return;
+    }
+    response.status(200).json({ status: 'OK' });
+  } catch (err) {
+    console.log('deleteProduct error: ' + (err?.stack ?? err));
+    response.status(500).json({ status: 'NOK', message: 'Internal error' });
+  }
 };
 
 const getProducts = async (request, response) => {

@@ -33,11 +33,17 @@ class MongoProductRepository extends EmbeddedRepositoryWithPagination {
    * @returns {Promise<Array>}
    */
   async findAllByUserId(userId) {
-    return this.collection
+    if (!userId) return [];
+    const docs = await this.collection
       .find({ userid: userId })
       .sort({ _id: -1 })
       .project({ supplies: 0, recipes: 0 })
       .toArray();
+    return (docs ?? []).map((doc) => {
+      const hexId = doc._id?.toString() ?? doc.id;
+      if (!hexId) return doc;
+      return { ...doc, _id: hexId, id: hexId };
+    });
   }
 
   /**
