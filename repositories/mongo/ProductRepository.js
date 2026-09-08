@@ -39,11 +39,19 @@ class MongoProductRepository extends EmbeddedRepositoryWithPagination {
       .sort({ _id: -1 })
       .project({ supplies: 0, recipes: 0 })
       .toArray();
-    return (docs ?? []).map((doc) => {
-      const hexId = doc._id?.toString() ?? doc.id;
+    return (docs ?? []).map((doc) => this.mapListDoc(doc));
+  }
+
+  mapListDoc(doc) {
+    if (!doc || typeof doc !== 'object') return doc;
+    try {
+      const rawId = doc._id ?? doc.id;
+      const hexId = rawId?.toString() ?? null;
       if (!hexId) return doc;
       return { ...doc, _id: hexId, id: hexId };
-    });
+    } catch {
+      return doc;
+    }
   }
 
   /**

@@ -8,6 +8,7 @@
  */
 
 const { MongoClient, ObjectId } = require('mongodb');
+const crypto = require('crypto');
 const { MongoProductRepository } = require('./repositories/mongo/ProductRepository.js');
 const { MongoRecalculationRepository } = require('./repositories/mongo/RecalculationRepository.js');
 
@@ -116,6 +117,15 @@ function sendStatus(response, ok) {
   response.status(200).json({ status: ok ? 'OK' : 'NOK' });
 }
 
+function hashUserId(userId) {
+  if (!userId) return 'none';
+  try {
+    return crypto.createHash('sha256').update(String(userId)).digest('hex').slice(0, 12);
+  } catch {
+    return 'unknown';
+  }
+}
+
 const getProductGetEdit = async (request, response) => {
   const id = extractToken(request);
   const productId = request.params.id;
@@ -147,9 +157,15 @@ const deleteProduct = async (request, response) => {
 
 const getProducts = async (request, response) => {
   const id = extractToken(request);
-  const repo = await getProductRepository();
-  const list = await repo.findAllByUserId(id);
-  response.status(200).json(list || []);
+  try {
+    const repo = await getProductRepository();
+    const list = await repo.findAllByUserId(id);
+    console.log('getProducts user=' + hashUserId(id) + ' count=' + (list?.length ?? 0));
+    response.status(200).json(list || []);
+  } catch (err) {
+    console.log('getProducts user=' + hashUserId(id) + ' error: ' + (err?.stack ?? err));
+    response.status(500).json({ status: 'NOK', message: 'Internal error' });
+  }
 };
 
 const createProduct = async (request, response) => {
