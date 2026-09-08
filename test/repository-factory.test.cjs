@@ -10,9 +10,6 @@ const {
 const {
   MongoRecalculationRepository,
 } = require('../repositories/mongo/RecalculationRepository.js');
-const {
-  PostgresProductRepository,
-} = require('../repositories/postgres/ProductRepository.js');
 const { createFakeDb } = require('./helpers/mongo-fakes.cjs');
 
 describe('RepositoryFactory', () => {
@@ -56,16 +53,13 @@ describe('RepositoryFactory', () => {
     assert.throws(() => factory.getRecalculationRepository(), /MongoDB database required/);
   });
 
-  it('creates Postgres repositories from a pg pool', () => {
-    const pool = { query: async () => ({ rows: [], rowCount: 0 }) };
-    const factory = RepositoryFactory.initialize({ type: 'postgres', pgPool: pool });
+  it('throws a removal error for postgres configs', () => {
+    const factory = RepositoryFactory.initialize({ type: 'postgres', pgPool: {} });
 
-    assert.ok(factory.getProductRepository() instanceof PostgresProductRepository);
-  });
-
-  it('throws for postgres without a pool', () => {
-    const factory = RepositoryFactory.initialize({ type: 'postgres' });
-    assert.throws(() => factory.getProductRepository(), /PostgreSQL pool required/);
+    assert.throws(() => factory.getProductRepository(), /PostgreSQL support was removed/);
+    assert.throws(() => factory.getSupplyRepository(), /PostgreSQL support was removed/);
+    assert.throws(() => factory.getRecipeRepository(), /PostgreSQL support was removed/);
+    assert.throws(() => factory.getRecalculationRepository(), /PostgreSQL support was removed/);
   });
 
   it('throws for unsupported database types', () => {

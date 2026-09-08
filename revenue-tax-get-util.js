@@ -1,11 +1,11 @@
 /**
  * Revenue/Tax calculation utilities.
  *
- * Pure functions that re-implement the logic previously handled by
- * PostgreSQL stored functions:
- * - `function_total_supplies.sql` -> calculateSupplyCost / calculateSuppliesTotal
- * - `function_total_recipes.sql`  -> calculateRecipeCost / calculateRecipesTotal
- * - `procedure_recal.sql`         -> calculateProductCosts
+ * Pure functions for cost math used by the MongoDB aggregation
+ * pipeline and application-level recalculation:
+ * - calculateSupplyCost / calculateSuppliesTotal (embedded supplies)
+ * - calculateRecipeCost / calculateRecipesTotal (embedded recipes)
+ * - calculateProductCosts (product cost breakdown with tax and markup)
  *
  * All functions are side-effect free and safe to use in MongoDB
  * aggregation pipelines or application-level recalculation.
@@ -65,8 +65,7 @@ function calculateMarkup(expenses, revenue) {
 
 /**
  * Cost of a single supply row.
- * Re-implements `function_total_supplies.sql` per-row logic:
- *   (value * qtvalue) / qt, divided by 1000 when unit is KG.
+ * Formula: (value * qtvalue) / qt, divided by 1000 when unit is KG.
  * @param {*} value - Price per package
  * @param {*} qt - Quantity in package
  * @param {*} qtvalue - Quantity used
@@ -84,7 +83,7 @@ function calculateSupplyCost(value, qt, qtvalue, unit) {
 }
 
 /**
- * Total cost of all supplies (replaces `total_supply(productId)`).
+ * Total cost of all supplies.
  * @param {Array} [supplies=[]] - Supply rows
  * @returns {number} Rounded total
  */
@@ -102,8 +101,7 @@ function calculateSuppliesTotal(supplies = []) {
 
 /**
  * Cost contribution of a single recipe row.
- * Re-implements `function_total_recipes.sql` per-row logic:
- *   (total * quantity) / yieldvalue
+ * Formula: (total * quantity) / yieldvalue
  * @param {*} total - Recipe total cost
  * @param {*} quantity - Times the recipe is used
  * @param {*} yieldvalue - Recipe yield amount
@@ -119,7 +117,7 @@ function calculateRecipeCost(total, quantity, yieldvalue) {
 }
 
 /**
- * Total cost of all recipes (replaces `total_recipes(productId)`).
+ * Total cost of all recipes.
  * @param {Array} [recipes=[]] - Recipe rows
  * @returns {number} Rounded total
  */
@@ -146,7 +144,7 @@ function applyPercentage(base, percentage) {
 
 /**
  * Product cost breakdown.
- * Re-implements the core math of `procedure_recalculate`:
+ * Formulas:
  *   productCost = totalSupplies + totalRecipes
  *   withTax = productCost + productCost * tax / 100
  *   withMarkup = productCost + productCost * markup / 100

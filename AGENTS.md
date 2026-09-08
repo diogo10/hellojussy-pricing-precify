@@ -59,10 +59,10 @@ export class CreateUserService {
 }
 ```
 
-## 5. Repository Pattern & Database Abstraction Layer
+## 5. Repository Pattern & Database Layer (MongoDB only)
 
 ### Overview
-This project implements a **Repository Pattern** with a **Database Abstraction Layer** to support both **PostgreSQL** and **MongoDB** without coupling business logic to specific database drivers.
+This project implements a **Repository Pattern** on **MongoDB only** (PostgreSQL support was removed). Products store supplies and recipes as embedded documents in the `products` collection, without coupling business logic to the `mongodb` driver.
 
 ### Architecture
 
@@ -79,70 +79,59 @@ This project implements a **Repository Pattern** with a **Database Abstraction L
 │  IRecalculationRepository                                       │
 └───────────────────────────┬─────────────────────────────────────┘
                             │ Implementation
-              ┌─────────────┴─────────────┐
-              ▼                           ▼
-┌─────────────────────────┐   ┌─────────────────────────┐
-│  PostgreSQL Implementation  │   │  MongoDB Implementation  │
-│  repositories/postgres/     │   │  repositories/mongo/     │
-└─────────────────────────┘   └─────────────────────────┘
-              │                           │
-              └─────────────┬─────────────┘
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  MongoDB Implementation (embedded documents)                    │
+│  repositories/mongo/                                            │
+└───────────────────────────┬─────────────────────────────────────┘
                             ▼
               ┌─────────────────────────┐
               │   RepositoryFactory     │
-              │   (Database Selection)  │
+              │   (MongoDB wiring)      │
               └─────────────────────────┘
 ```
 
 ### Directory Structure
 ```
 repositories/
-├── interfaces/           # Domain contracts (TypeScript interfaces)
-│   ├── IProductRepository.ts
-│   ├── ISupplyRepository.ts
-│   ├── IRecipeRepository.ts
-│   ├── IRecalculationRepository.ts
-│   └── index.ts
-├── postgres/             # PostgreSQL implementations
-│   ├── ProductRepository.ts
-│   ├── SupplyRepository.ts
-│   ├── RecipeRepository.ts
-│   ├── RecalculationRepository.ts
-│   └── index.ts
-├── mongo/                # MongoDB implementations
-│   ├── ProductRepository.ts
-│   ├── SupplyRepository.ts
-│   ├── RecipeRepository.ts
-│   ├── RecalculationRepository.ts
-│   └── index.ts
-├── RepositoryFactory.ts  # Factory for DB-agnostic instantiation
-└── index.ts              # Barrel exports
+├── interfaces/           # Domain contracts (JSDoc interfaces)
+│   ├── IProductRepository.js
+│   ├── ISupplyRepository.js
+│   ├── IRecipeRepository.js
+│   ├── IRecalculationRepository.js
+│   └── index.js
+├── mongo/                # MongoDB implementations (only backend)
+│   ├── ProductRepository.js
+│   ├── SupplyRepository.js
+│   ├── RecipeRepository.js
+│   ├── RecalculationRepository.js
+│   ├── BaseRepository.js
+│   ├── EmbeddedRepository.js
+│   └── index.js
+├── RepositoryFactory.js  # Factory for MongoDB instantiation
+└── index.js              # Barrel exports
 ```
 
 ### Key Principles
 
 1. **Interface Segregation**: Each repository interface defines only the methods needed by its consumers.
 
-2. **Dependency Inversion**: Services depend on interfaces (`IProductRepository`), not concrete implementations (`PostgresProductRepository`).
+2. **Dependency Inversion**: Services depend on interfaces (`IProductRepository`), not concrete implementations (`MongoProductRepository`).
 
-3. **Factory Pattern**: `RepositoryFactory` creates the correct implementation based on configuration (`postgres` | `mongodb`).
+3. **Factory Pattern**: `RepositoryFactory` wires the MongoDB implementations from a `mongoDb` handle. Passing `type: 'postgres'` throws a removal error.
 
 4. **Constructor Injection**: Services receive repositories via constructor, enabling easy testing with mocks.
 
 ### Usage
 
 #### Configuration (at application bootstrap)
-```typescript
-import { RepositoryFactory } from './repositories/RepositoryFactory.js';
-import { Pool } from 'pg';
-import { Db } from 'mongodb';
+```javascript
+const { RepositoryFactory } = require('./repositories/RepositoryFactory.js');
+const { MongoClient } = require('mongodb');
 
-// For PostgreSQL
-const pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
-RepositoryFactory.initialize({ type: 'postgres', pgPool });
-
-// For MongoDB
+// MongoDB only
 const mongoClient = new MongoClient(process.env.MONGODB_URI);
+await mongoClient.connect();
 const mongoDb = mongoClient.db('pricing');
 RepositoryFactory.initialize({ type: 'mongodb', mongoDb });
 ```
@@ -174,60 +163,37 @@ export class ProductService {
 }
 ```
 
-### Adding a New Database Implementation
-
-1. Create a new folder under `repositories/` (e.g., `repositories/mysql/`)
-2. Implement all four repository interfaces:
-   - `IProductRepository`
-   - `ISupplyRepository`
-   - `IRecipeRepository`
-   - `IRecalculationRepository`
-3. Export implementations from `repositories/mysql/index.ts`
-4. Add a case in `RepositoryFactory.createXxxRepository()` methods
-5. Add the new type to `DatabaseType` union in `RepositoryFactory.ts`
-
 ### Testing Strategy
 
-- **Unit Tests**: Mock repository interfaces using `vitest`/`jest` mocks
-- **Integration Tests**: Use testcontainers for PostgreSQL and MongoDB
-- **Contract Tests**: Verify all implementations satisfy interface contracts
+- **Unit Tests**: Mock repository interfaces using `sinon` stubs with the fake Mongo collections in `test/helpers/mongo-fakes.cjs`; run with `npm test` (mocha)
+- **Integration Tests**: Set `MONGODB_URI` to run the Mongo integration suites (e.g. `recipes_queries.test.cjs`); they skip without it
+- **Contract Tests**: Verify the Mongo implementations satisfy the interface contracts in `repositories/interfaces/`
 
-```typescript
+```javascript
 // Example: Unit test with mocked repository
-import { vi } from 'vitest';
-import { ProductService } from './ProductService.js';
-import { IProductRepository } from '../repositories/interfaces/index.js';
+const sinon = require('sinon');
+const { ProductService } = require('./services/ProductService.js');
 
-const mockProductRepo = vi.fn() as unknown as IProductRepository;
-mockProductRepo.findAllByUserId.mockResolvedValue([...]);
+const productRepository = { findAllByUserId: sinon.stub().resolves([...]) };
 
-const service = new ProductService(mockProductRepo, ...);
+const service = new ProductService(productRepository, ...);
 ```
 
 ### Current Implementation Status
 
-| Repository | PostgreSQL | MongoDB | Interface |
-|------------|:----------:|:-------:|:---------:|
-| Product    | ✅         | ✅      | ✅        |
-| Supply     | ✅         | ✅      | ✅        |
-| Recipe     | ✅         | ✅      | ✅        |
-| Recalculation | ✅      | ⚠️ Partial | ✅     |
+| Repository | MongoDB | Interface |
+|------------|:-------:|:---------:|
+| Product    | ✅      | ✅        |
+| Supply     | ✅      | ✅        |
+| Recipe     | ✅      | ✅        |
+| Recalculation | ✅   | ✅        |
 
-**Note**: MongoDB `RecalculationRepository` has a simplified implementation. Full parity requires MongoDB aggregation pipelines matching PostgreSQL stored procedures.
-
-### Migration Guide (PostgreSQL → MongoDB)
-
-1. Set `MONGODB_URI` environment variable
-2. Change `RepositoryFactory.initialize({ type: 'mongodb', mongoDb })`
-3. Run MongoDB schema migration (create collections, indexes)
-4. Verify all integration tests pass
-5. Deploy with feature flag for gradual rollout
+Recalculation runs as a MongoDB aggregation pipeline in `MongoRecalculationRepository.executeRecalculate`.
 
 ### Best Practices
 
-- **Never** import `pg` or `mongodb` directly in services/controllers
+- **Never** import `mongodb` directly in services/controllers (wiring lives in `db.js` and the repositories)
 - **Always** use repository interfaces for type hints
 - **Prefer** `Promise.all()` for parallel queries in `findById` methods
 - **Handle** `ObjectId` conversion explicitly in MongoDB implementations
-- **Use** transactions in PostgreSQL for multi-table operations (create product + supplies + recipes)
 - **Avoid** singleton `RepositoryFactory` in tests; use `reset()` or create fresh instances

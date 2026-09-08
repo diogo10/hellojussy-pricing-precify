@@ -1,15 +1,15 @@
-const { PostgresProductRepository, PostgresSupplyRepository, PostgresRecipeRepository, PostgresRecalculationRepository } = require('./postgres/index.js');
 const { MongoProductRepository } = require('./mongo/ProductRepository.js');
 const { MongoEmbeddedSupplyRepository } = require('./mongo/SupplyRepository.js');
 const { MongoEmbeddedRecipeRepository } = require('./mongo/RecipeRepository.js');
 const { MongoRecalculationRepository } = require('./mongo/RecalculationRepository.js');
 
+const POSTGRES_REMOVED_MESSAGE = "PostgreSQL support was removed. Use { type: 'mongodb', mongoDb }.";
+
 class RepositoryFactory {
   /**
    * @param {Object} config - Repository configuration
-   * @param {'postgres'|'mongodb'} config.type - Database type
-   * @param {import('pg').Pool} [config.pgPool] - PostgreSQL pool (postgres only)
-   * @param {import('mongodb').Db} [config.mongoDb] - MongoDB Db (mongodb only)
+   * @param {'mongodb'} config.type - Database type (only 'mongodb' is supported)
+   * @param {import('mongodb').Db} [config.mongoDb] - MongoDB Db handle
    */
   constructor(config) {
     this.config = config;
@@ -38,6 +38,18 @@ class RepositoryFactory {
    */
   static resetInstance() {
     RepositoryFactory.instance = null;
+  }
+
+  assertMongodb() {
+    if (this.config?.type === 'postgres') {
+      throw new Error(POSTGRES_REMOVED_MESSAGE);
+    }
+    if (this.config?.type && this.config.type !== 'mongodb') {
+      throw new Error(`Unsupported database type: ${this.config.type}`);
+    }
+    if (!this.config?.mongoDb) {
+      throw new Error('MongoDB database required for mongodb repository');
+    }
   }
 
   getProductRepository() {
@@ -69,71 +81,23 @@ class RepositoryFactory {
   }
 
   createProductRepository() {
-    switch (this.config.type) {
-      case 'postgres':
-        if (!this.config.pgPool) {
-          throw new Error('PostgreSQL pool required for postgres repository');
-        }
-        return new PostgresProductRepository(this.config.pgPool);
-      case 'mongodb':
-        if (!this.config.mongoDb) {
-          throw new Error('MongoDB database required for mongodb repository');
-        }
-        return new MongoProductRepository(this.config.mongoDb);
-      default:
-        throw new Error(`Unsupported database type: ${this.config.type}`);
-    }
+    this.assertMongodb();
+    return new MongoProductRepository(this.config.mongoDb);
   }
 
   createSupplyRepository() {
-    switch (this.config.type) {
-      case 'postgres':
-        if (!this.config.pgPool) {
-          throw new Error('PostgreSQL pool required for postgres repository');
-        }
-        return new PostgresSupplyRepository(this.config.pgPool);
-      case 'mongodb':
-        if (!this.config.mongoDb) {
-          throw new Error('MongoDB database required for mongodb repository');
-        }
-        return new MongoEmbeddedSupplyRepository(this.config.mongoDb);
-      default:
-        throw new Error(`Unsupported database type: ${this.config.type}`);
-    }
+    this.assertMongodb();
+    return new MongoEmbeddedSupplyRepository(this.config.mongoDb);
   }
 
   createRecipeRepository() {
-    switch (this.config.type) {
-      case 'postgres':
-        if (!this.config.pgPool) {
-          throw new Error('PostgreSQL pool required for postgres repository');
-        }
-        return new PostgresRecipeRepository(this.config.pgPool);
-      case 'mongodb':
-        if (!this.config.mongoDb) {
-          throw new Error('MongoDB database required for mongodb repository');
-        }
-        return new MongoEmbeddedRecipeRepository(this.config.mongoDb);
-      default:
-        throw new Error(`Unsupported database type: ${this.config.type}`);
-    }
+    this.assertMongodb();
+    return new MongoEmbeddedRecipeRepository(this.config.mongoDb);
   }
 
   createRecalculationRepository() {
-    switch (this.config.type) {
-      case 'postgres':
-        if (!this.config.pgPool) {
-          throw new Error('PostgreSQL pool required for postgres repository');
-        }
-        return new PostgresRecalculationRepository(this.config.pgPool);
-      case 'mongodb':
-        if (!this.config.mongoDb) {
-          throw new Error('MongoDB database required for mongodb repository');
-        }
-        return new MongoRecalculationRepository(this.config.mongoDb);
-      default:
-        throw new Error(`Unsupported database type: ${this.config.type}`);
-    }
+    this.assertMongodb();
+    return new MongoRecalculationRepository(this.config.mongoDb);
   }
 
   reset() {

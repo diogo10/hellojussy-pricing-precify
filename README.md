@@ -2,7 +2,7 @@
 
 CRUD for precify domain.
 
-- Database: Postgres (Supabase)
+- Database: MongoDB
 - URL: https://hellojussy-pricing-precify.vercel.app
 - Host: Vercel
 
@@ -10,7 +10,7 @@ CRUD for precify domain.
 
 ```sh
 $ npm install
-$ brew services start postgresql@14
+$ export MONGODB_URI="mongodb://localhost:27017/pricing_precify"
 $ npm start
 ```
 

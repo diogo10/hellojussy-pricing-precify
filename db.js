@@ -4,7 +4,7 @@
  * All handlers use the embedded-document repositories from
  * `repositories/mongo/` (see MONGODB_SCHEMA_PROPOSAL.md). Recalculation
  * runs through `MongoRecalculationRepository.executeRecalculate`, which
- * applies the aggregation pipeline replacing `procedure_recalculate`.
+ * applies the aggregation pipeline over the embedded supplies and recipes.
  */
 
 const { MongoClient, ObjectId } = require('mongodb');

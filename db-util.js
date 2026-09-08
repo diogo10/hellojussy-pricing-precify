@@ -1,10 +1,8 @@
 /**
  * MongoDB database utilities.
  *
- * Replaces the legacy PostgreSQL helpers (`pool.query(...)`,
- * `procedure_recalculate`, `procedure_delete_all`) with repository-based
- * operations backed by `MongoRecalculationRepository` and pure
- * application-level math (see `revenue-tax-get-util.js` and
+ * Repository-based operations backed by `MongoRecalculationRepository`
+ * and pure application-level math (see `revenue-tax-get-util.js` and
  * MONGODB_SCHEMA_PROPOSAL.md section 9).
  */
 
@@ -20,10 +18,6 @@ function logResult(label, result) {
   console.log('\u001b[1;34m ' + label + ': ' + result);
   console.log('');
   console.log('---------------------');
-}
-
-function isPostgresPool(target) {
-  return Boolean(target && typeof target.query === 'function');
 }
 
 /**
@@ -44,86 +38,35 @@ async function runRepositoryOperation(operation, label) {
 }
 
 /**
- * Execute an update via repository (or legacy pg pool for backward compat).
- * @param {Object|Function} repositoryOrPool - Repository, pg pool, or async fn
- * @param {*} operationOrSql - Async fn/promise when using repositories, SQL text for legacy pool
- * @param {Array} [values] - SQL values (legacy pool only)
+ * Execute an update via repository operation.
+ * @param {Function|Promise} operation - Async function or promise
  * @returns {Promise<boolean>}
  */
-async function executeUpdateQuery(repositoryOrPool, operationOrSql, values) {
-  if (typeof repositoryOrPool === 'function' || operationOrSql instanceof Promise
-    || (typeof operationOrSql === 'function')) {
-    const operation = typeof operationOrSql === 'function' ? operationOrSql : repositoryOrPool;
-    logOperation('executeUpdateQuery', 'repository operation');
-    return runRepositoryOperation(operation, 'executeUpdateQuery result');
-  }
-
-  if (isPostgresPool(repositoryOrPool)) {
-    return executeLegacyQuery(repositoryOrPool, operationOrSql, values, 'executeQuery');
-  }
-
-  logOperation('executeUpdateQuery', String(operationOrSql));
-  return runRepositoryOperation(operationOrSql, 'executeUpdateQuery result');
+async function executeUpdateQuery(operation) {
+  logOperation('executeUpdateQuery', 'repository operation');
+  return runRepositoryOperation(operation, 'executeUpdateQuery result');
 }
 
 /**
- * Execute a delete via repository (or legacy pg pool for backward compat).
- * @param {Object|Function} repositoryOrPool - Repository, pg pool, or async fn
- * @param {*} operationOrSql - Async fn/promise when using repositories, SQL text for legacy pool
- * @param {Array} [values] - SQL values (legacy pool only)
+ * Execute a delete via repository operation.
+ * @param {Function|Promise} operation - Async function or promise
  * @returns {Promise<boolean>}
  */
-async function executeDeleteQuery(repositoryOrPool, operationOrSql, values) {
-  return executeUpdateQuery(repositoryOrPool, operationOrSql, values);
-}
-
-async function executeLegacyQuery(pool, sql, values, label) {
-  try {
-    logOperation(label + ' text', sql);
-    const response = await pool.query(sql, values);
-    const result = (response?.rowCount ?? 0) > 0;
-    logResult(label + ' result', result);
-    return result;
-  } catch (err) {
-    console.log(err?.stack ?? err);
-    return false;
-  }
-}
-
-async function executeLegacyProcedure(pool, procedureName, values) {
-  try {
-    logOperation('executeProcedure procedureName', procedureName);
-    const response = await pool.query(procedureName, values);
-    const result = (response?.rowCount ?? 0) >= 0;
-    logResult('executeProcedure result', result);
-    return result;
-  } catch (err) {
-    console.log(err?.stack ?? err);
-    return false;
-  }
+async function executeDeleteQuery(operation) {
+  return executeUpdateQuery(operation);
 }
 
 /**
  * Recalculate all products for a user.
- * Preferred: pass a MongoDB recalculation repository with
- * `executeRecalculate(tax, markup, userId)` (aggregation pipeline per
- * MONGODB_SCHEMA_PROPOSAL.md). Legacy pg pool + [tax, markup, userId]
- * is still accepted for backward compatibility.
- * @param {Object} recalculationRepositoryOrPool - Mongo repo or legacy pg pool
- * @param {Array|Object} valuesOrOptions - Legacy [tax, markup, userId] or { tax, markup, userId }
+ * @param {Object} recalculationRepository - MongoDB recalculation repository
+ *   with `executeRecalculate(tax, markup, userId)` (aggregation pipeline per
+ *   MONGODB_SCHEMA_PROPOSAL.md).
+ * @param {Object|Array} valuesOrOptions - { tax, markup, userId } or legacy [tax, markup, userId]
  * @param {string} [userId] - User ID when values passed separately
  * @returns {Promise<boolean>}
  */
-async function recalculate(recalculationRepositoryOrPool, valuesOrOptions, userId) {
+async function recalculate(recalculationRepository, valuesOrOptions, userId) {
   try {
-    if (isPostgresPool(recalculationRepositoryOrPool)) {
-      return executeLegacyProcedure(
-        recalculationRepositoryOrPool,
-        'call procedure_recalculate($1,$2,$3);',
-        valuesOrOptions
-      );
-    }
-
     const options = Array.isArray(valuesOrOptions)
       ? { tax: valuesOrOptions[0], markup: valuesOrOptions[1], userId: valuesOrOptions[2] }
       : (valuesOrOptions ?? {});
@@ -132,10 +75,10 @@ async function recalculate(recalculationRepositoryOrPool, valuesOrOptions, userI
     const targetUserId = options.userId ?? userId;
 
     if (!targetUserId) return false;
-    if (typeof recalculationRepositoryOrPool?.executeRecalculate !== 'function') return false;
+    if (typeof recalculationRepository?.executeRecalculate !== 'function') return false;
 
     logOperation('recalculate', 'user ' + targetUserId);
-    const result = await recalculationRepositoryOrPool.executeRecalculate(tax, markup, targetUserId);
+    const result = await recalculationRepository.executeRecalculate(tax, markup, targetUserId);
     logResult('recalculate result', result);
     return Boolean(result);
   } catch (err) {
@@ -146,26 +89,21 @@ async function recalculate(recalculationRepositoryOrPool, valuesOrOptions, userI
 
 /**
  * Delete all data for a user.
- * Accepts a recalculation repository (`deleteAll(userId)`), a product
- * repository (`deleteAllByUserId(userId)`), or a legacy pg pool.
- * @param {Object} repositoryOrPool - Mongo repository or legacy pg pool
- * @param {string|Array} userIdOrValues - User ID or legacy [userId]
+ * Accepts a recalculation repository (`deleteAll(userId)`) or a product
+ * repository (`deleteAllByUserId(userId)`).
+ * @param {Object} repository - Mongo repository
+ * @param {string} userId - User ID
  * @returns {Promise<boolean>}
  */
-async function deleteAll(repositoryOrPool, userIdOrValues) {
+async function deleteAll(repository, userId) {
   try {
-    if (isPostgresPool(repositoryOrPool)) {
-      return executeLegacyProcedure(repositoryOrPool, 'call procedure_delete_all($1);', userIdOrValues);
-    }
+    if (!userId || typeof userId !== 'string') return false;
 
-    const userId = Array.isArray(userIdOrValues) ? userIdOrValues[0] : userIdOrValues;
-    if (!userId) return false;
-
-    if (typeof repositoryOrPool?.deleteAll === 'function') {
-      return Boolean(await repositoryOrPool.deleteAll(userId));
+    if (typeof repository?.deleteAll === 'function') {
+      return Boolean(await repository.deleteAll(userId));
     }
-    if (typeof repositoryOrPool?.deleteAllByUserId === 'function') {
-      return Boolean(await repositoryOrPool.deleteAllByUserId(userId));
+    if (typeof repository?.deleteAllByUserId === 'function') {
+      return Boolean(await repository.deleteAllByUserId(userId));
     }
     return false;
   } catch (err) {

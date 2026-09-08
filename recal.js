@@ -1,8 +1,7 @@
 /**
  * MongoDB recalculation module.
  *
- * Replaces `procedure_recalculate(tax, markup, userId)` with the
- * `MongoRecalculationRepository` aggregation pipeline (see
+ * Uses the `MongoRecalculationRepository` aggregation pipeline (see
  * MONGODB_SCHEMA_PROPOSAL.md section 9). Tax/markup are fetched from
  * the external revenue/tax services, then applied to every product of
  * the user in a single repository call.
@@ -32,7 +31,6 @@ async function fetchTaxAndMarkup(userId, dependencies = {}) {
 /**
  * Recalculate all products for a user.
  * @param {Object} recalculationRepository - Mongo recalculation repository
- *   (or legacy pg pool for backward compatibility)
  * @param {string} userId - User ID
  * @param {Object} [dependencies] - Injectable { getMarkup, getTaxTotal } for testing
  * @returns {Promise<boolean>} Whether recalculation succeeded

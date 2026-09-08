@@ -1,9 +1,8 @@
 /**
  * MongoDB recipe recalculation module.
  *
- * Replaces the PostgreSQL delete + re-insert cycle with embedded-document
- * updates on the `products` collection (see MONGODB_SCHEMA_PROPOSAL.md
- * patterns 5-6). When a product repository with `updateRecipeByIdentityId`
+ * Uses embedded-document updates on the `products` collection (see
+ * MONGODB_SCHEMA_PROPOSAL.md patterns 5-6). When a product repository with `updateRecipeByIdentityId`
  * is provided, a single array-filter update is used per recipe; otherwise
  * it falls back to the legacy delete + add flow for backward compatibility.
  */

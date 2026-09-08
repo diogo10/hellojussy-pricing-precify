@@ -255,7 +255,7 @@ describe('MongoEmbeddedSupplyRepository (embedded per MONGODB_SCHEMA_PROPOSAL.md
     assert.deepStrictEqual(call.update.$pull, { supplies: { identity_id: 'supply-uuid-001' } });
   });
 
-  it('computeSupplyCost matches function_total_supplies.sql semantics', () => {
+  it('computeSupplyCost applies per-row supply cost semantics', () => {
     const repo = new MongoEmbeddedSupplyRepository(createFakeDb());
     assert.strictEqual(repo.computeSupplyCost(8.5, 1000, 500, 'G'), 4.25);
     assert.strictEqual(repo.computeSupplyCost(1000, 1, 1, 'KG'), 1);
