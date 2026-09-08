@@ -126,6 +126,34 @@ function hashUserId(userId) {
   }
 }
 
+function getAuthScheme(req) {
+  const header = req.headers?.authorization;
+  if (!header) return 'missing';
+  const scheme = String(header).split(' ')[0];
+  return scheme || 'malformed';
+}
+
+function getTokenSource(req, userId) {
+  if (req.headers?.authorization?.startsWith('Bearer ')) return 'header';
+  if (req.query?.token) return 'query';
+  if (!userId) return 'none';
+  return 'unknown';
+}
+
+function logProductsRequest(req, userId) {
+  const parts = [
+    'getProducts request',
+    'method=' + (req.method ?? 'unknown'),
+    'path=' + (req.originalUrl ?? req.url ?? '/api/products'),
+    'authScheme=' + getAuthScheme(req),
+    'tokenSource=' + getTokenSource(req, userId),
+    'user=' + hashUserId(userId),
+    'hasQueryToken=' + Boolean(req.query?.token),
+  ];
+  if (!userId) parts.push('valid=false reason=missing-token');
+  console.log(parts.join(' '));
+}
+
 const getProductGetEdit = async (request, response) => {
   const id = extractToken(request);
   const productId = request.params.id;
@@ -157,6 +185,7 @@ const deleteProduct = async (request, response) => {
 
 const getProducts = async (request, response) => {
   const id = extractToken(request);
+  logProductsRequest(request, id);
   try {
     const repo = await getProductRepository();
     const list = await repo.findAllByUserId(id);
