@@ -106,6 +106,57 @@ Success response:
 
 Mutations return `200 { "status": "OK" }` on success.
 
+### `GET /api/products` — sample response
+
+Returns `200` with an array of products for the token user. Embedded `supplies` and `recipes` are excluded from this list view (see `repositories/mongo/ProductRepository.js:findAllByUserId`) — fetch `GET /api/product/:id` for the full document.
+
+```json
+[
+  {
+    "_id": "65a1b2c3d4e5f6789012345",
+    "id": "65a1b2c3d4e5f6789012345",
+    "userid": "3DtXXvgec9SBYtgT3whh1fsfaTC3",
+    "product_name": "Bolo de Chocolate Premium",
+    "profit_percentage": "35",
+    "price": 55.0,
+    "product_cost": 28.5,
+    "product_cost_with_tax": 32.78,
+    "product_cost_with_markup": 38.48,
+    "product_cost_with_markup_tax": 44.25,
+    "total_fichas": 15.3,
+    "total_extras": 13.2,
+    "created_at": "2024-01-15T10:30:00.000Z",
+    "updated_at": "2024-01-20T14:45:00.000Z",
+    "version": 12
+  }
+]
+```
+
+Data-layer hint (TypeScript):
+
+```typescript
+interface ProductListItem {
+  id: string; // mirrors _id (hex ObjectId)
+  _id: string;
+  userid: string;
+  product_name: string;
+  profit_percentage: string;
+  price: number;
+  product_cost: number;
+  product_cost_with_tax: number;
+  product_cost_with_markup: number;
+  product_cost_with_markup_tax: number;
+  total_fichas: number;
+  total_extras: number;
+  created_at: string;
+  updated_at: string;
+  version: number;
+  // supplies/recipes are NOT present here — use GET /api/product/:id
+}
+
+type ListProductsResponse = ProductListItem[];
+```
+
 Webhook bodies:
 
 ```json
